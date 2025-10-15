@@ -1,7 +1,7 @@
 body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* on ajuste le bouton plus haut */
   align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, #6dd5fa, #2980b9);
@@ -14,7 +14,8 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* bouton en haut */
+  margin-top: 20%; /* bouton au 2/3 de l'écran */
 }
 
 #timerButton {
@@ -41,7 +42,7 @@ body {
   align-items: center;
   padding: 10px;
   position: absolute;
-  bottom: 0;
+  bottom: 5%; /* un peu remonté pour ne pas scroller */
   width: 100%;
   background: rgba(0,0,0,0.1);
 }
