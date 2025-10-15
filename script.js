@@ -1,8 +1,9 @@
 const button = document.getElementById("timerButton");
-let timeLeft = 30;
+const input = document.getElementById("durationInput");
+let timeLeft = parseInt(input.value);
 let interval = null;
 
-// Prépare le son
+// Prépare la sonnerie
 const sonnerie = new Audio("dring.mp3");
 
 button.addEventListener("click", () => {
@@ -11,14 +12,17 @@ button.addEventListener("click", () => {
     clearInterval(interval);
   }
 
-  // Réinitialise le son au cas où
+  // Stoppe et réinitialise la sonnerie
   sonnerie.pause();
   sonnerie.currentTime = 0;
 
-  // Réinitialise le minuteur
-  timeLeft = 30;
+  // Récupère la durée choisie
+  timeLeft = parseInt(input.value);
+  if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 30;
+
   button.textContent = timeLeft;
 
+  // Démarre le compte à rebours
   interval = setInterval(() => {
     timeLeft--;
     button.textContent = timeLeft;
@@ -28,15 +32,12 @@ button.addEventListener("click", () => {
       interval = null;
 
       // Joue la sonnerie
-      sonnerie.play().catch((error) => {
-        console.log("Impossible de lire le son :", error);
-      });
+      sonnerie.play().catch((err) => console.log("Erreur son :", err));
 
-      // Réinitialise l'affichage après la sonnerie
+      // Réinitialise l'affichage
       setTimeout(() => {
-        button.textContent = "30";
+        button.textContent = input.value;
       }, 2000);
     }
   }, 1000);
 });
-
