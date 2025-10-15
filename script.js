@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
   tic.playbackRate = 6; // vitesse x6
   tic.volume = 1.0;      // volume max
 
-  // Texte pour le bouton à zéro
-  const restartText = "Redémarrer";
-
   // Affiche la durée initiale
   button.textContent = timeLeft;
   button.style.fontSize = "6rem"; // texte initial gros
@@ -26,8 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function startTimer() {
     if (interval) clearInterval(interval);
 
-    // Tic sonore + effet visuel + vibration
-    tic.currentTime = 0;
+    // Joue le tic à chaque reset (décalé de 0.1s)
+    tic.currentTime = 0.1;
     tic.play().catch(err => console.log("Erreur tic :", err));
 
     // Effet rebond rapide
@@ -53,33 +50,4 @@ document.addEventListener("DOMContentLoaded", () => {
     button.style.fontSize = "6rem"; // texte gros pendant le chrono
     state = "running";
 
-    interval = setInterval(() => {
-      timeLeft--;
-      button.textContent = timeLeft;
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        interval = null;
-        state = "paused"; // pause
-        button.textContent = restartText;
-        button.style.fontSize = "2.5rem"; // texte plus petit pour "Redémarrer"
-
-        // Joue le son pendant 3 secondes
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(err => console.log("Erreur son :", err));
-        setTimeout(() => {
-          sonnerie.pause();
-          sonnerie.currentTime = 0;
-        }, 3000);
-      }
-    }, 1000);
-  }
-
-  function handleButtonClick() {
-    if (state === "ready" || state === "paused" || state === "running") {
-      startTimer();
-    }
-  }
-
-  button.addEventListener("click", handleButtonClick);
-});
+    i
