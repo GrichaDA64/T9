@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (interval) clearInterval(interval);
 
     // Joue le tic à chaque reset (décalé de 0.1s)
-    tic.currentTime = 0.1;
+    tic.currentTime = 0.05;
     tic.play().catch(err => console.log("Erreur tic :", err));
 
     // Effet rebond rapide
