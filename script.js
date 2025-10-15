@@ -3,24 +3,20 @@ const input = document.getElementById("durationInput");
 
 let timeLeft = parseInt(input.value);
 let interval = null;
-let state = "ready"; // ready, running, finished
+let state = "ready"; // ready, running, paused
 
 // Sonnerie
 const sonnerie = new Audio("dring.mp3");
 sonnerie.load();
-let sonCount = 0;
 
 function startTimer() {
-  if (interval) {
-    clearInterval(interval);
-  }
+  if (interval) clearInterval(interval);
 
   // Reset son
   sonnerie.pause();
   sonnerie.currentTime = 0;
-  sonCount = 0;
 
-  // Récupère la durée
+  // Récupère durée
   timeLeft = parseInt(input.value);
   if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 30;
 
@@ -34,28 +30,21 @@ function startTimer() {
     if (timeLeft <= 0) {
       clearInterval(interval);
       interval = null;
-      state = "finished";
-      button.textContent = "||"; // bouton pause
+      state = "paused"; // on met en pause
+      button.textContent = "0";
 
-      // Joue le son 2 fois
-      function playSon() {
-        if (sonCount < 2) {
-          sonnerie.currentTime = 0;
-          sonnerie.play().catch(err => console.log("Erreur son :", err));
-          sonCount++;
-          setTimeout(playSon, 1000); // délai 1s entre les sons
-        }
-      }
-      playSon();
+      // Joue le son pendant 3 secondes seulement
+      sonnerie.currentTime = 0;
+      sonnerie.play().catch(err => console.log("Erreur son :", err));
+      setTimeout(() => {
+        sonnerie.pause();
+      }, 3000);
     }
   }, 1000);
 }
 
 function handleButtonClick() {
-  if (state === "ready" || state === "running") {
-    startTimer();
-  } else if (state === "finished") {
-    // bouton pause -> play
+  if (state === "ready" || state === "paused" || state === "running") {
     startTimer();
   }
 }
