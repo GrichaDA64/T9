@@ -1,21 +1,21 @@
 body {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* on gère l'espacement avec margin-top */
+  justify-content: flex-start;
   align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, #6dd5fa, #2980b9);
   font-family: Arial, sans-serif;
   margin: 0;
   position: relative;
-  overflow: hidden; /* plus de scroll */
+  overflow: hidden;
 }
 
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20%; /* bouton au 2/3 approx */
+  margin-top: 20%; /* bouton légèrement plus haut */
 }
 
 #timerButton {
@@ -25,7 +25,7 @@ body {
   border-radius: 50%;
   width: 200px;
   height: 200px;
-  font-size: 3rem;
+  font-size: 6rem; /* texte deux fois plus gros */
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -41,7 +41,7 @@ body {
   flex-direction: column;
   align-items: center;
   position: absolute;
-  bottom: 10%; /* un peu remonté pour être visible */
+  bottom: 5%; /* un peu remonté */
   width: 100%;
 }
 
@@ -57,4 +57,10 @@ body {
   text-align: center;
   border-radius: 0.5rem;
   border: none;
+  margin-bottom: 5px;
+}
+
+/* box invisible pour pousser le champ vers le haut */
+.spacer {
+  height: 50px; /* ajustable selon besoin */
 }
