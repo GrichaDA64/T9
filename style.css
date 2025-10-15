@@ -29,3 +29,18 @@ body {
 #timerButton:active {
   transform: scale(0.95);
 }
+label {
+  display: block;
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+#durationInput {
+  font-size: 1.2rem;
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  border: none;
+  margin-bottom: 1.5rem;
+}
