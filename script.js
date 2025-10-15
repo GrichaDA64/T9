@@ -3,8 +3,9 @@ const input = document.getElementById("durationInput");
 let timeLeft = parseInt(input.value);
 let interval = null;
 
-// Prépare la sonnerie
+// Crée l'objet Audio au début et précharge le son
 const sonnerie = new Audio("dring.mp3");
+sonnerie.load(); // précharge le son pour qu'il soit prêt à jouer
 
 button.addEventListener("click", () => {
   // Si un compte à rebours est déjà en cours, on le réinitialise
@@ -18,7 +19,7 @@ button.addEventListener("click", () => {
 
   // Récupère la durée choisie
   timeLeft = parseInt(input.value);
-  if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 20;
+  if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 30;
 
   button.textContent = timeLeft;
 
@@ -31,7 +32,7 @@ button.addEventListener("click", () => {
       clearInterval(interval);
       interval = null;
 
-      // Joue la sonnerie
+      // Joue la sonnerie (doit être autorisée car l'utilisateur a cliqué)
       sonnerie.play().catch((err) => console.log("Erreur son :", err));
 
       // Réinitialise l'affichage
