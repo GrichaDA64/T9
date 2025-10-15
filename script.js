@@ -1,28 +1,31 @@
 const button = document.getElementById("timerButton");
 const input = document.getElementById("durationInput");
-const pauseButton = document.getElementById("pauseButton");
 
 let timeLeft = parseInt(input.value);
 let interval = null;
+let state = "ready"; // ready, running, finished
 
 // Sonnerie
 const sonnerie = new Audio("dring.mp3");
 sonnerie.load();
+let sonCount = 0;
 
-// Fonction pour démarrer le timer
 function startTimer() {
   if (interval) {
     clearInterval(interval);
   }
 
-  // Stop et reset son
+  // Reset son
   sonnerie.pause();
   sonnerie.currentTime = 0;
+  sonCount = 0;
 
-  // Récupère durée
+  // Récupère la durée
   timeLeft = parseInt(input.value);
   if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 30;
+
   button.textContent = timeLeft;
+  state = "running";
 
   interval = setInterval(() => {
     timeLeft--;
@@ -31,25 +34,31 @@ function startTimer() {
     if (timeLeft <= 0) {
       clearInterval(interval);
       interval = null;
-      sonnerie.play().catch(err => console.log("Erreur son :", err));
-      setTimeout(() => {
-        button.textContent = input.value;
-      }, 2000);
+      state = "finished";
+      button.textContent = "||"; // bouton pause
+
+      // Joue le son 2 fois
+      function playSon() {
+        if (sonCount < 2) {
+          sonnerie.currentTime = 0;
+          sonnerie.play().catch(err => console.log("Erreur son :", err));
+          sonCount++;
+          setTimeout(playSon, 1000); // délai 1s entre les sons
+        }
+      }
+      playSon();
     }
   }, 1000);
 }
 
-// Fonction pour pause
-function pauseTimer() {
-  if (interval) {
-    clearInterval(interval);
-    interval = null;
+function handleButtonClick() {
+  if (state === "ready" || state === "running") {
+    startTimer();
+  } else if (state === "finished") {
+    // bouton pause -> play
+    startTimer();
   }
-  // Stop son si il joue
-  sonnerie.pause();
-  sonnerie.currentTime = 0;
 }
 
-// Événements
-button.addEventListener("click", startTimer);
-pauseButton.addEventListener("click", pauseTimer);
+// Événement
+button.addEventListener("click", handleButtonClick);
