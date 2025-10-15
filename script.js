@@ -10,9 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const sonnerie = new Audio("dring.mp3");
   sonnerie.load();
 
-  // Icônes
+  // Icône play
   const playIcon = "▶"; // triangle vert
-  // Au départ, on met le texte numérique
+
+  // Affiche la durée initiale
   button.textContent = timeLeft;
 
   function startTimer() {
@@ -37,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(interval);
         interval = null;
         state = "paused"; // pause
-        button.textContent = playIcon;
+        button.textContent = playIcon; // affiche le triangle vert
 
         // Joue le son pendant 3 secondes
         sonnerie.currentTime = 0;
