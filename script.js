@@ -13,17 +13,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Icône play
   const playIcon = "▶"; // triangle vert
 
-  // Affiche la durée initiale
   button.textContent = timeLeft;
 
   function startTimer() {
     if (interval) clearInterval(interval);
 
-    // Reset son
     sonnerie.pause();
     sonnerie.currentTime = 0;
 
-    // Récupère durée
     timeLeft = parseInt(input.value);
     if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 15;
 
@@ -37,10 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (timeLeft <= 0) {
         clearInterval(interval);
         interval = null;
-        state = "paused"; // pause
-        button.textContent = playIcon; // affiche le triangle vert
+        state = "paused";
+        button.textContent = playIcon;
 
-        // Joue le son pendant 3 secondes
         sonnerie.currentTime = 0;
         sonnerie.play().catch(err => console.log("Erreur son :", err));
         setTimeout(() => {
