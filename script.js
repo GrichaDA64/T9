@@ -3,6 +3,9 @@ const input = document.getElementById("durationInput");
 let timeLeft = parseInt(input.value);
 let interval = null;
 
+let audio = new Audio("dring.mp3");
+audio.play();
+
 // Crée l'objet Audio au début et précharge le son
 const sonnerie = new Audio("dring.mp3");
 sonnerie.load(); // précharge le son pour qu'il soit prêt à jouer
