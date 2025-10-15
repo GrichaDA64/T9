@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sonnerie longue à zéro
   const sonnerie = new Audio("dring.mp3");
   sonnerie.load();
+  sonnerie.volume = 0.5;      // volume diminué
 
   // Tic sonore à chaque reset
   const tic = new Audio("tic.mp3");
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (interval) clearInterval(interval);
 
     // Joue le tic à chaque reset (décalé de 0.1s)
-    tic.currentTime = 0.1;
+    tic.currentTime = 0.3;
     tic.play().catch(err => console.log("Erreur tic :", err));
 
     // Effet rebond rapide
