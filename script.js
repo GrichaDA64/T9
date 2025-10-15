@@ -18,7 +18,7 @@ button.addEventListener("click", () => {
 
   // Récupère la durée choisie
   timeLeft = parseInt(input.value);
-  if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 30;
+  if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 20;
 
   button.textContent = timeLeft;
 
