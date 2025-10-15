@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Tic sonore à chaque reset
   const tic = new Audio("tic.mp3");
   tic.load();
-  tic.playbackRate = 6; // vitesse x6
+ // tic.playbackRate = 6; // vitesse x6
   tic.volume = 1.0;      // volume max
 
   // Affiche la durée initiale
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (interval) clearInterval(interval);
 
     // Joue le tic à chaque reset (décalé de 0.1s)
-    tic.currentTime = 0.05;
+ //  tic.currentTime = 0.05;
     tic.play().catch(err => console.log("Erreur tic :", err));
 
     // Effet rebond rapide
