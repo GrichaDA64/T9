@@ -1,19 +1,19 @@
 const button = document.getElementById("timerButton");
 const input = document.getElementById("durationInput");
+const sonCheckbox = document.getElementById("sonEnabled");
 let timeLeft = parseInt(input.value);
 let interval = null;
 
-// Crée l'objet Audio au début et précharge le son
+// Prépare le son
 const sonnerie = new Audio("dring.mp3");
-sonnerie.load(); // précharge le son pour qu'il soit prêt à jouer
+sonnerie.load();
 
 button.addEventListener("click", () => {
-  // Si un compte à rebours est déjà en cours, on le réinitialise
   if (interval) {
     clearInterval(interval);
   }
 
-  // Stoppe et réinitialise la sonnerie
+  // Stoppe et réinitialise le son
   sonnerie.pause();
   sonnerie.currentTime = 0;
 
@@ -23,7 +23,6 @@ button.addEventListener("click", () => {
 
   button.textContent = timeLeft;
 
-  // Démarre le compte à rebours
   interval = setInterval(() => {
     timeLeft--;
     button.textContent = timeLeft;
@@ -32,8 +31,10 @@ button.addEventListener("click", () => {
       clearInterval(interval);
       interval = null;
 
-      // Joue la sonnerie (doit être autorisée car l'utilisateur a cliqué)
-      sonnerie.play().catch((err) => console.log("Erreur son :", err));
+      // Joue la sonnerie si cochée
+      if (sonCheckbox.checked) {
+        sonnerie.play().catch(err => console.log("Erreur son :", err));
+      }
 
       // Réinitialise l'affichage
       setTimeout(() => {
