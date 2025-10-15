@@ -35,9 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 
     // Vibration si supportée
-    if (navigator.vibrate) {
-      navigator.vibrate(100); // 100ms
-    }
+  //  if (navigator.vibrate) {
+    //  navigator.vibrate(100); // 100ms
+    //}
 
     // Reset sonnerie
     sonnerie.pause();
