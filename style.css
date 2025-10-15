@@ -1,21 +1,21 @@
 body {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* on ajuste le bouton plus haut */
+  justify-content: flex-start; /* on gère l'espacement avec margin-top */
   align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, #6dd5fa, #2980b9);
   font-family: Arial, sans-serif;
   margin: 0;
   position: relative;
+  overflow: hidden; /* plus de scroll */
 }
 
 .container {
-  flex: 1;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* bouton en haut */
-  margin-top: 20%; /* bouton au 2/3 de l'écran */
+  align-items: center;
+  margin-top: 20%; /* bouton au 2/3 approx */
 }
 
 #timerButton {
@@ -40,11 +40,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
   position: absolute;
-  bottom: 5%; /* un peu remonté pour ne pas scroller */
+  bottom: 10%; /* un peu remonté pour être visible */
   width: 100%;
-  background: rgba(0,0,0,0.1);
 }
 
 .bottom-bar label {
