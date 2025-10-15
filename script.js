@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
   tic.load();
   tic.playbackRate = 4; // vitesse x4
 
-  // Icône play
-  const playIcon = "▶"; // triangle vert
+  // Texte pour le bouton à zéro
+  const restartText = "Redémarrer";
 
   // Affiche la durée initiale
   button.textContent = timeLeft;
@@ -41,30 +41,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     interval = setInterval(() => {
       timeLeft--;
-      button.textContent = timeLeft;
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        interval = null;
-        state = "paused"; // pause
-        button.textContent = playIcon;
-
-        // Joue le son pendant 3 secondes
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(err => console.log("Erreur son :", err));
-        setTimeout(() => {
-          sonnerie.pause();
-          sonnerie.currentTime = 0;
-        }, 3000);
-      }
-    }, 1000);
-  }
-
-  function handleButtonClick() {
-    if (state === "ready" || state === "paused" || state === "running") {
-      startTimer();
-    }
-  }
-
-  button.addEventListener("click", handleButtonClick);
-});
+      button.textCon
