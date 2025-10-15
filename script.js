@@ -26,9 +26,20 @@ document.addEventListener("DOMContentLoaded", () => {
   function startTimer() {
     if (interval) clearInterval(interval);
 
-    // Joue le tic à chaque reset
+    // Tic sonore + effet visuel + vibration
     tic.currentTime = 0;
     tic.play().catch(err => console.log("Erreur tic :", err));
+
+    // Effet rebond rapide
+    button.style.transform = "scale(1.1)";
+    setTimeout(() => {
+      button.style.transform = "scale(1)";
+    }, 100);
+
+    // Vibration si supportée
+    if (navigator.vibrate) {
+      navigator.vibrate(100); // 100ms
+    }
 
     // Reset sonnerie
     sonnerie.pause();
@@ -62,3 +73,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 3000);
       }
     }, 1000);
+  }
+
+  function handleButtonClick() {
+    if (state === "ready" || state === "paused" || state === "running") {
+      startTimer();
+    }
+  }
+
+  button.addEventListener("click", handleButtonClick);
+});
