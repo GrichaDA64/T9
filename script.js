@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sonnerie longue à zéro
   const sonnerie = new Audio("dring.mp3");
   sonnerie.load();
-  sonnerie.volume = 0.5;      // volume diminué
+  sonnerie.volume = 0.5; // volume diminué
 
   // Tic sonore à chaque reset
   const tic = new Audio("tic.mp3");
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (interval) clearInterval(interval);
 
     // Joue le tic à chaque reset (décalé de 0.1s)
-    tic.currentTime = 0.3;
+    tic.currentTime = 0.1;
     tic.play().catch(err => console.log("Erreur tic :", err));
 
     // Effet rebond rapide
@@ -34,21 +34,4 @@ document.addEventListener("DOMContentLoaded", () => {
       button.style.transform = "scale(1)";
     }, 100);
 
-    // Vibration si supportée
-    if (navigator.vibrate) {
-      navigator.vibrate(100); // 100ms
-    }
-
-    // Reset sonnerie
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
-
-    // Récupère durée
-    timeLeft = parseInt(input.value);
-    if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 15;
-
-    button.textContent = timeLeft;
-    button.style.fontSize = "6rem"; // texte gros pendant le chrono
-    state = "running";
-
-    i
+    // Vibration si
