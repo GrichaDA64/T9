@@ -34,4 +34,50 @@ document.addEventListener("DOMContentLoaded", () => {
       button.style.transform = "scale(1)";
     }, 100);
 
-    // Vibration si
+    // Vibration si supportée
+    if (navigator.vibrate) {
+      navigator.vibrate(100); // 100ms
+    }
+
+    // Reset sonnerie
+    sonnerie.pause();
+    sonnerie.currentTime = 0;
+
+    // Récupère durée
+    timeLeft = parseInt(input.value);
+    if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 15;
+
+    button.textContent = timeLeft;
+    button.style.fontSize = "6rem"; // texte gros pendant le chrono
+    state = "running";
+
+    interval = setInterval(() => {
+      timeLeft--;
+      button.textContent = timeLeft;
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        interval = null;
+        state = "paused"; // pause
+        button.textContent = "0"; // plus de triangle
+        button.style.fontSize = "6rem"; // reste gros
+
+        // Joue le son pendant 3 secondes
+        sonnerie.currentTime = 0;
+        sonnerie.play().catch(err => console.log("Erreur son :", err));
+        setTimeout(() => {
+          sonnerie.pause();
+          sonnerie.currentTime = 0;
+        }, 3000);
+      }
+    }, 1000);
+  }
+
+  function handleButtonClick() {
+    if (state === "ready" || state === "paused" || state === "running") {
+      startTimer();
+    }
+  }
+
+  button.addEventListener("click", handleButtonClick);
+});
