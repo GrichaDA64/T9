@@ -56,7 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
     interval = setInterval(() => {
       timeLeft--;
       button.textContent = timeLeft;
-
+// Tic chaque seconde à partir de 5 secondes avant la fin
+  if (timeLeft <= 5 && timeLeft > 0) {
+    tic.currentTime = 0;
+    tic.play().catch(err => console.log("Erreur tic :", err));
+  }
+      
       if (timeLeft <= 0) {
         clearInterval(interval);
         interval = null;
