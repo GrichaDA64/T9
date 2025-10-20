@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("timerButton");
   const input = document.getElementById("durationInput");
+    const stopButton = document.getElementById("stopButton");
+
 
   let timeLeft = parseInt(input.value);
   let interval = null;
@@ -80,4 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   button.addEventListener("click", handleButtonClick);
+    stopButton.addEventListener("click", () => {
+    clearInterval(interval);
+    interval = null;
+    state = "ready";
+    sonnerie.pause();
+    sonnerie.currentTime = 0;
+    button.textContent = "15";
+    input.value = 15;
+  });
+
 });
