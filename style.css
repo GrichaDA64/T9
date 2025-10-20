@@ -64,3 +64,24 @@ body {
 .spacer {
   height: 50px; /* ajustable selon besoin */
 }
+
+#stopButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #2980b9;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+#stopButton:hover {
+  transform: scale(1.1);
+}
+
