@@ -23,89 +23,60 @@ document.addEventListener("DOMContentLoaded", () => {
   button.textContent = timeLeft;
   button.style.fontSize = "6rem"; // texte initial gros
 
-  function startTimer() {
-    if (interval) clearInterval(interval);
+  let startTime = 0;
+  let lastDisplayedSecond = null;
+  let cycleDuration = 0;
 
-    // Joue le tic à chaque reset
-    tic.currentTime = 0;
-    tic.play().catch(err => console.log("Erreur tic :", err));
+function startTimer() {
+  if (interval) clearInterval(interval);
 
-    // Effet rebond rapide
-    button.style.transform = "scale(1.1)";
-    setTimeout(() => {
-      button.style.transform = "scale(1)";
-    }, 100);
+  tic.currentTime = 0;
+  tic.play().catch(() => {});
 
-    // Vibration si supportée
-  //  if (navigator.vibrate) {
-    //  navigator.vibrate(100); // 100ms
-    //}
+  sonnerie.pause();
+  sonnerie.currentTime = 0;
 
-    // Reset sonnerie
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
+  const duration = parseInt(input.value);
+  cycleDuration = isNaN(duration) || duration <= 0 ? 15 : duration;
 
-    // Récupère durée
-    timeLeft = parseInt(input.value);
-    if (isNaN(timeLeft) || timeLeft <= 0) timeLeft = 15;
+  state = "running";
+  button.style.fontSize = "6rem";
 
-    button.textContent = timeLeft;
-    button.style.fontSize = "6rem"; // texte gros pendant le chrono
-    state = "running";
+  startTime = performance.now();
+  lastDisplayedSecond = cycleDuration;
 
-    /*interval = setInterval(() => {
-      timeLeft--;
-      button.textContent = timeLeft;
-      // Tic chaque seconde à partir de 5 secondes avant la fin
-      if (timeLeft <= 5 && timeLeft > 0) {
+  button.textContent = cycleDuration;
+
+  interval = setInterval(() => {
+    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const currentTime = cycleDuration - elapsed;
+
+    if (currentTime !== lastDisplayedSecond) {
+      lastDisplayedSecond = currentTime;
+      button.textContent = currentTime;
+
+      // Tic les 5 dernières secondes
+      if (currentTime <= 5 && currentTime > 0) {
         tic.currentTime = 0;
-        tic.play().catch(err => console.log("Erreur tic :", err));
+        tic.play().catch(() => {});
       }
-      
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        interval = null;
-        state = "paused"; // pause
-        button.textContent = "0"; // plus de triangle
-        button.style.fontSize = "6rem"; // reste gros
 
-        // Joue le son pendant 3 secondes
+      // FIN DU CYCLE
+      if (currentTime === 0) {
+        // Sonnerie
         sonnerie.currentTime = 0;
-        sonnerie.play().catch(err => console.log("Erreur son :", err));
-        setTimeout(() => {
-          sonnerie.pause();
-          sonnerie.currentTime = 0;
-        }, 3000);
-      }
-    }, 1000);*/
-      
-    interval = setInterval(() => {
-      timeLeft--;
-      button.textContent = timeLeft;
-    
-      // Tic chaque seconde à partir de 5 secondes avant la fin
-      if (timeLeft <= 5 && timeLeft > 0) {
-        tic.currentTime = 0;
-        tic.play().catch(err => console.log("Erreur tic :", err));
-      }
-    
-      // Passage à zéro
-      if (timeLeft === 0) {
-        state = "paused";
-    
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(err => console.log("Erreur son :", err));
-      }
-    
-      // Temps négatif : sonnerie toutes les 5 secondes
-      if (timeLeft < 0 && Math.abs(timeLeft) % 5 === 0) {
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(err => console.log("Erreur son :", err));
-      }
-    
-    }, 1000);
+        sonnerie.play().catch(() => {});
 
-  }
+        // 🔁 Redémarre immédiatement un cycle de 5 secondes
+        cycleDuration = 10;
+        startTime = performance.now();
+        lastDisplayedSecond = cycleDuration;
+        button.textContent = cycleDuration;
+      }
+    }
+  }, 50); // haute fréquence, calcul léger
+}
+
 
   function handleButtonClick() {
     if (state === "ready" || state === "paused" || state === "running") {
