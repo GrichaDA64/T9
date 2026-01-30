@@ -53,14 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
     button.style.fontSize = "6rem"; // texte gros pendant le chrono
     state = "running";
 
-    interval = setInterval(() => {
+    /*interval = setInterval(() => {
       timeLeft--;
       button.textContent = timeLeft;
-// Tic chaque seconde à partir de 5 secondes avant la fin
-  if (timeLeft <= 5 && timeLeft > 0) {
-    tic.currentTime = 0;
-    tic.play().catch(err => console.log("Erreur tic :", err));
-  }
+      // Tic chaque seconde à partir de 5 secondes avant la fin
+      if (timeLeft <= 5 && timeLeft > 0) {
+        tic.currentTime = 0;
+        tic.play().catch(err => console.log("Erreur tic :", err));
+      }
       
       if (timeLeft <= 0) {
         clearInterval(interval);
@@ -77,7 +77,34 @@ document.addEventListener("DOMContentLoaded", () => {
           sonnerie.currentTime = 0;
         }, 3000);
       }
+    }, 1000);*/
+      
+    interval = setInterval(() => {
+      timeLeft--;
+      button.textContent = timeLeft;
+    
+      // Tic chaque seconde à partir de 5 secondes avant la fin
+      if (timeLeft <= 5 && timeLeft > 0) {
+        tic.currentTime = 0;
+        tic.play().catch(err => console.log("Erreur tic :", err));
+      }
+    
+      // Passage à zéro
+      if (timeLeft === 0) {
+        state = "paused";
+    
+        sonnerie.currentTime = 0;
+        sonnerie.play().catch(err => console.log("Erreur son :", err));
+      }
+    
+      // Temps négatif : sonnerie toutes les 5 secondes
+      if (timeLeft < 0 && Math.abs(timeLeft) % 5 === 0) {
+        sonnerie.currentTime = 0;
+        sonnerie.play().catch(err => console.log("Erreur son :", err));
+      }
+    
     }, 1000);
+
   }
 
   function handleButtonClick() {
