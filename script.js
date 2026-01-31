@@ -20,9 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     await audioCtx.resume();
 
-    await loadSound("start", "reset.mp3");
-    await loadSound("tic", "tic.mp3");
-    await loadSound("dring", "dring.mp3");
+    await Promise.all([
+      loadSound("start", "reset.mp3"),
+      loadSound("tic", "tic.mp3"),
+      loadSound("dring", "dring.mp3")
+    ]);
 
     unlocked = true;
   }
@@ -51,6 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      ⏱ TIMER
      ========================= */
+  let ticPlayed = false;
+  let ringing = false;
+
   function startTimer() {
     clearInterval(interval);
 
@@ -60,6 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
     button.textContent = remaining;
     state = "running";
 
+    ticPlayed = false;
+    ringing = false;
+
     play("start", 1);
 
     interval = setInterval(() => {
@@ -68,13 +76,25 @@ document.addEventListener("DOMContentLoaded", () => {
       remaining--;
       button.textContent = remaining;
 
-      if (remaining <= 5 && remaining > 0) {
+      // 🔹 TIC : une seule fois à 5s
+      if (remaining === 5 && !ticPlayed) {
+        ticPlayed = true;
         play("tic", 1);
       }
 
-      if (remaining <= 0) {
+      // 🔹 FIN DE CYCLE
+      if (remaining === 0 && !ringing) {
+        ringing = true;
         play("dring", 0.5);
-        remaining = 10; // nouveau cycle
+
+        // reset cycle
+        remaining = 10;
+        ticPlayed = false;
+
+        // déverrouille la sonnerie pour le prochain cycle
+        setTimeout(() => {
+          ringing = false;
+        }, 1000);
       }
     }, 1000);
   }
@@ -83,13 +103,16 @@ document.addEventListener("DOMContentLoaded", () => {
      🖱 EVENTS
      ========================= */
   button.addEventListener("click", async () => {
-    await unlockAudio();   // 🔓 geste utilisateur
+    await unlockAudio();
     startTimer();
   });
 
   stopButton.addEventListener("click", () => {
     state = "ready";
     clearInterval(interval);
+
+    ticPlayed = false;
+    ringing = false;
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
