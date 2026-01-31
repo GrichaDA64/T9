@@ -1,158 +1,125 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================
-     🧠 MACHINE D’ÉTAT
-     ========================= */
-  const TimerState = Object.freeze({
-    READY: "ready",
-    RUNNING: "running",
-    STOPPED: "stopped"
-  });
-
-  let state = TimerState.READY;
-  let initialDuration = 20;
-
-  function setState(next) {
-    state = next;
-  }
-
-  /* =========================
-     🔊 AUDIO SERVICE
-     ========================= */
-  class AudioService {
-    constructor() {
-      this.ctx = null;
-      this.buffers = {};
-      this.unlocked = false;
-    }
-
-    async unlock() {
-      if (this.unlocked) return;
-
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-      await this.ctx.resume();
-
-      await Promise.all([
-        this.load("start", "reset.mp3"),
-        this.load("tic", "tic.mp3"),
-        this.load("dring", "dring.mp3")
-      ]);
-
-      this.unlocked = true;
-    }
-
-    async load(name, url) {
-      const res = await fetch(url);
-      const data = await res.arrayBuffer();
-      this.buffers[name] = await this.ctx.decodeAudioData(data);
-    }
-
-    play(name, volume = 1) {
-      const buffer = this.buffers[name];
-      if (!buffer) return;
-
-      const src = this.ctx.createBufferSource();
-      const gain = this.ctx.createGain();
-
-      src.buffer = buffer;
-      gain.gain.value = volume;
-
-      src.connect(gain);
-      gain.connect(this.ctx.destination);
-      src.start();
-    }
-  }
-
-  const audio = new AudioService();
-
-  /* =========================
-     ⏱ TIMER LOGIQUE PUR
-     ========================= */
-  class PreciseTimer {
-    constructor(onTick, onCycleEnd) {
-      this.onTick = onTick;
-      this.onCycleEnd = onCycleEnd;
-      this.interval = null;
-      this.endTime = 0;
-      this.lastSecond = null;
-    }
-
-    start(durationSec) {
-      this.stop();
-      this.endTime = performance.now() + durationSec * 1000;
-      this.lastSecond = null;
-      this.interval = setInterval(() => this.tick(), 100);
-    }
-
-    stop() {
-      if (this.interval) {
-        clearInterval(this.interval);
-        this.interval = null;
-      }
-    }
-
-    tick() {
-      const now = performance.now();
-      const remainingMs = this.endTime - now;
-      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
-
-      if (remainingSec !== this.lastSecond) {
-        this.onTick(this.lastSecond, remainingSec);
-
-        if (this.lastSecond === 1 && remainingSec === 0) {
-          this.onCycleEnd();
-        }
-
-        this.lastSecond = remainingSec;
-      }
-    }
-  }
-
-  /* =========================
-     🖱 UI / ADAPTATEUR
-     ========================= */
   const button = document.getElementById("timerButton");
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
 
-  const timer = new PreciseTimer(
-    (prev, current) => {
-      button.textContent = current;
+  let interval = null;
+  let state = "ready"; // "ready", "running", "paused"
 
-      if (prev === 6 && current === 5) {
-        audio.play("tic", 1);
-      }
-    },
-    () => {
-      audio.play("dring", 0.5);
-      timer.start(initialDuration);
-      audio.play("start", 1);
+  let cycleDuration = 0;
+  let cycleEndTime = 0;
+  let lastSecond = null;
+
+  let audioCtx;
+  let buffers = {};
+  let unlocked = false;
+  let activeSources = [];
+
+  async function unlockAudio() {
+    if (unlocked) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    await Promise.all([
+      loadSound("start", "reset.mp3"),
+      loadSound("tic", "tic.mp3"),
+      loadSound("dring", "dring.mp3")
+    ]);
+    unlocked = true;
+  }
+
+  async function loadSound(name, url) {
+    const res = await fetch(url);
+    const data = await res.arrayBuffer();
+    buffers[name] = await audioCtx.decodeAudioData(data);
+  }
+
+  function play(name, volume = 1) {
+    if (!buffers[name]) return;
+    const src = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+    src.buffer = buffers[name];
+    gain.gain.value = volume;
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+    src.start();
+    activeSources.push(src);
+    src.onended = () => {
+      const index = activeSources.indexOf(src);
+      if (index > -1) activeSources.splice(index, 1);
+    };
+  }
+
+  function stopAllSounds() {
+    activeSources.forEach(src => {
+      try { src.stop(); } catch (e) {}
+    });
+    activeSources = [];
+  }
+
+  function startTimer() {
+    clearInterval(interval);
+
+    const initial = parseInt(input.value);
+    cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
+
+    cycleEndTime = performance.now() + cycleDuration * 1000;
+    lastSecond = null;
+    state = "running";
+
+    play("start", 1);
+
+    interval = setInterval(timerTick, 100);
+  }
+
+  function timerTick() {
+    if (state === "ready") return;
+
+    const now = performance.now();
+    let remainingMs = cycleEndTime - now;
+    let remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+
+    if (state === "paused") {
+      // Affiche 0 pendant la pause
+      button.textContent = 0;
+      return;
     }
-  );
 
-  async function start() {
-    if (state === TimerState.RUNNING) return;
+    if (remainingSec !== lastSecond) {
+      button.textContent = remainingSec;
 
-    await audio.unlock();
+      // Tic
+      if (lastSecond === 6 && remainingSec === 5) {
+        play("tic", 1);
+      }
 
-    const parsed = parseInt(input.value);
-    initialDuration = isNaN(parsed) || parsed <= 0 ? 20 : parsed;
+      // Fin de cycle
+      if (lastSecond === 1 && remainingSec === 0) {
+        play("dring", 0.5);
+        cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;;
+        cycleEndTime = performance.now() + cycleDuration * 1000;
+        lastSecond = cycleDuration;
+        return;
+      }
 
-    audio.play("start", 1);
-    timer.start(initialDuration);
-    setState(TimerState.RUNNING);
+      lastSecond = remainingSec;
+    }
   }
 
-  function stop() {
-    timer.stop();
-    setState(TimerState.STOPPED);
+  button.addEventListener("click", async () => {
+    stopAllSounds();
+    await unlockAudio();
+    startTimer();
+  });
 
-    const value = parseInt(input.value);
-    button.textContent = isNaN(value) || value <= 0 ? initialDuration : value;
-  }
-
-  button.addEventListener("click", start);
-  stopButton.addEventListener("click", stop);
+  stopButton.addEventListener("click", () => {
+    state = "ready";
+    clearInterval(interval);
+    const initial = parseInt(input.value) || 20;
+    button.textContent = initial;
+    lastSecond = null;
+    stopAllSounds();
+  });
 
   button.style.fontSize = "6rem";
-  button.textContent = parseInt(input.value) || initialDuration;
+  button.textContent = parseInt(input.value) || 20;
 });
