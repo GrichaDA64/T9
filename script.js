@@ -47,7 +47,7 @@ function startTimer() {
   button.style.fontSize = "6rem";
 
   nextRingTime = performance.now() + duration * 1000;
-  lastSecondDisplayed = null;
+  lastSecondDisplayed = duration;
 
   loop();
 }
@@ -66,8 +66,7 @@ function loop() {
       tic.currentTime = 0;
       tic.play().catch(() => {});
     }
-  }
-
+      
   if (remainingMs <= 0 && !ringing) {
     ringing = true;
 
@@ -78,10 +77,11 @@ function loop() {
     sonnerie.play().catch(() => {});
 
     nextRingTime += 5000;
-    lastSecondDisplayed = null;
+    lastSecondDisplayed = duration;
     ticPlayed = false;
 
-    setTimeout(() => ringing = false, 3000);
+    setTimeout(() => ringing = false, 2000);
+  }
   }
 
   rafId = requestAnimationFrame(loop);
