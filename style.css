@@ -74,9 +74,9 @@ body {
   color: #2980b9;
   border: none;
   border-radius: 50%;
-  width: 20vw;
+  width: min(20vw,100px);
   height: 20vw;
-  font-size: 1.5rem;
+  font-size: 2rem;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s;
