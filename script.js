@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // nouveau cycle PROPRE de 10 secondes
           cycleEndTime = parseInt(input.value) || 20;
-          lastSecond = cycleEndTime + 1;
+          lastSecond = null;
           return;
         }
 
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
-    lastSecond = initial + 1;
+    lastSecond = null;
 
     // 🔹 arrêter tous les sons
     stopAllSounds();
