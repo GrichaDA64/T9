@@ -4,138 +4,97 @@ document.addEventListener("DOMContentLoaded", () => {
   const stopButton = document.getElementById("stopButton");
 
   let state = "ready";
-  let rafId = null;
+  let interval = null;
+  let remaining = 0;
 
-  /* ============================
-     🎵 AUDIO LOW LATENCY
-     ============================ */
-  let audioCtx = null;
+  /* =========================
+     🔊 AUDIO LOW LATENCY
+     ========================= */
+  let audioCtx;
   let buffers = {};
-  let audioUnlocked = false;
-
-  async function loadSound(name, url) {
-    const res = await fetch(url);
-    const arrayBuffer = await res.arrayBuffer();
-    buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
-  }
-
-  function playSound(name, volume = 1.0) {
-    if (!audioUnlocked || !buffers[name]) return;
-
-    const source = audioCtx.createBufferSource();
-    const gain = audioCtx.createGain();
-
-    gain.gain.value = volume;
-    source.buffer = buffers[name];
-
-    source.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    source.start(0);
-  }
+  let unlocked = false;
 
   async function unlockAudio() {
-    if (audioUnlocked) return;
+    if (unlocked) return;
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     await audioCtx.resume();
 
-    await Promise.all([
-      loadSound("start", "reset.mp3"),
-      loadSound("tic", "tic.mp3"),
-      loadSound("dring", "dring.mp3")
-    ]);
+    await loadSound("start", "reset.mp3");
+    await loadSound("tic", "tic.mp3");
+    await loadSound("dring", "dring.mp3");
 
-    audioUnlocked = true;
+    unlocked = true;
   }
 
-  /* ============================
-     ⏱ TIMER LOGIC
-     ============================ */
-  let nextRingTime = 0;
-  let cycleDuration = 0;
-  let lastSecondDisplayed = null;
-  let ringing = false;
-  let ticPlayed = false;
+  async function loadSound(name, url) {
+    const res = await fetch(url);
+    const data = await res.arrayBuffer();
+    buffers[name] = await audioCtx.decodeAudioData(data);
+  }
 
-  button.style.fontSize = "6rem";
+  function play(name, volume = 1) {
+    if (!buffers[name]) return;
 
+    const src = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+
+    src.buffer = buffers[name];
+    gain.gain.value = volume;
+
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    src.start();
+  }
+
+  /* =========================
+     ⏱ TIMER
+     ========================= */
   function startTimer() {
-    cancelAnimationFrame(rafId);
-
-    playSound("start", 1.0);
-
-    ticPlayed = false;
-    ringing = false;
+    clearInterval(interval);
 
     const initial = parseInt(input.value);
-    cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
+    remaining = isNaN(initial) || initial <= 0 ? 20 : initial;
 
+    button.textContent = remaining;
     state = "running";
-    button.textContent = cycleDuration;
-    lastSecondDisplayed = null;
 
-    nextRingTime = performance.now() + cycleDuration * 1000;
-    loop();
-  }
+    play("start", 1);
 
-  function loop() {
-    if (state !== "running") return;
+    interval = setInterval(() => {
+      if (state !== "running") return;
 
-    const now = performance.now();
-    const remainingMs = nextRingTime - now;
-    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      remaining--;
+      button.textContent = remaining;
 
-    if (remainingSec !== lastSecondDisplayed) {
-      lastSecondDisplayed = remainingSec;
-      button.textContent = remainingSec;
-
-      if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
-        ticPlayed = true;
-        playSound("tic", 1.0);
+      if (remaining <= 5 && remaining > 0) {
+        play("tic", 1);
       }
-    }
 
-    if (remainingMs <= 0 && !ringing) {
-      ringing = true;
-      ticPlayed = false;
-
-      playSound("dring", 0.5);
-
-      nextRingTime = now + 10000; // nouveau cycle 10s
-      lastSecondDisplayed = null;
-
-      setTimeout(() => {
-        ringing = false;
-      }, 3000);
-    }
-
-    rafId = requestAnimationFrame(loop);
+      if (remaining <= 0) {
+        play("dring", 0.5);
+        remaining = 10; // nouveau cycle
+      }
+    }, 1000);
   }
 
-  /* ============================
+  /* =========================
      🖱 EVENTS
-     ============================ */
+     ========================= */
   button.addEventListener("click", async () => {
-    await unlockAudio();
+    await unlockAudio();   // 🔓 geste utilisateur
     startTimer();
   });
 
   stopButton.addEventListener("click", () => {
     state = "ready";
-    cancelAnimationFrame(rafId);
-
-    lastSecondDisplayed = null;
-    ticPlayed = false;
-    ringing = false;
+    clearInterval(interval);
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
   });
 
-  /* ============================
-     📺 INITIAL DISPLAY
-     ============================ */
-  const initial = parseInt(input.value) || 20;
-  button.textContent = initial;
+  button.style.fontSize = "6rem";
+  button.textContent = parseInt(input.value) || 20;
 });
