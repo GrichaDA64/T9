@@ -105,10 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
 
-          // nouveau cycle PROPRE de 10 secondes
+          // nouveau cycle
           cycleEndTime = parseInt(input.value) || 20;
-          lastSecond = null;
-          return;
+          lastSecond = cycleEndTime;
         }
 
         lastSecond = remainingSec;
