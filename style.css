@@ -68,14 +68,14 @@ body {
 /* Stop Button */
 #stopButton {
   position: absolute;
-  top: 40px;  /* plus bas pour être visible */
-  right: 15px;
+  top: 5vh; /* 5% de la hauteur de l'écran */
+  right: 3vw; /* 3% depuis le bord droit */
   background: rgba(255, 255, 255, 0.8);
   color: #2980b9;
   border: none;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 10vw;
+  height: 10vw;
   font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -91,7 +91,7 @@ body {
   #timerButton {
     width: 90vw;        /* presque toute la largeur */
     height: 90vw;       /* carré */
-    font-size: calc(4vw + 2rem); /* texte qui s’adapte */
+    font-size: calc(6vw + 2rem); /* texte qui s’adapte */
     border-radius: 20%;
   }
 }
