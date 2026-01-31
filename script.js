@@ -3,43 +3,69 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
 
-  let interval = null;
-  let state = "ready"; // ready, running, paused
-
-  const sonnerie = new Audio("dring.mp3");
-  sonnerie.load();
-  sonnerie.volume = 0.5;
-
-  const tic = new Audio("tic.mp3");
-  tic.load();
-  tic.volume = 1.0;
-
-  const start = new Audio("reset.mp3");
-  start.load();
-  start.volume = 1.0;
-
-  button.style.fontSize = "6rem";
-
+  let state = "ready";
   let rafId = null;
+
+  /* ============================
+     🎵 AUDIO LOW LATENCY
+     ============================ */
+  let audioCtx = null;
+  let buffers = {};
+  let audioUnlocked = false;
+
+  async function loadSound(name, url) {
+    const res = await fetch(url);
+    const arrayBuffer = await res.arrayBuffer();
+    buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+  }
+
+  function playSound(name, volume = 1.0) {
+    if (!audioUnlocked || !buffers[name]) return;
+
+    const source = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+
+    gain.gain.value = volume;
+    source.buffer = buffers[name];
+
+    source.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    source.start(0);
+  }
+
+  async function unlockAudio() {
+    if (audioUnlocked) return;
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+
+    await Promise.all([
+      loadSound("start", "reset.mp3"),
+      loadSound("tic", "tic.mp3"),
+      loadSound("dring", "dring.mp3")
+    ]);
+
+    audioUnlocked = true;
+  }
+
+  /* ============================
+     ⏱ TIMER LOGIC
+     ============================ */
   let nextRingTime = 0;
   let cycleDuration = 0;
   let lastSecondDisplayed = null;
   let ringing = false;
   let ticPlayed = false;
 
+  button.style.fontSize = "6rem";
+
   function startTimer() {
     cancelAnimationFrame(rafId);
 
-    // Jouer le son de reset
-    start.currentTime = 0;
-    start.play().catch(() => {});
+    playSound("start", 1.0);
 
-    tic.pause();
-    tic.currentTime = 0;
     ticPlayed = false;
-
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
     ringing = false;
 
     const initial = parseInt(input.value);
@@ -50,86 +76,66 @@ document.addEventListener("DOMContentLoaded", () => {
     lastSecondDisplayed = null;
 
     nextRingTime = performance.now() + cycleDuration * 1000;
-
     loop();
   }
 
   function loop() {
-    if (state !== "running") return; // stop si état changé
+    if (state !== "running") return;
 
     const now = performance.now();
     const remainingMs = nextRingTime - now;
     const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
 
-    // Mise à jour affichage
     if (remainingSec !== lastSecondDisplayed) {
       lastSecondDisplayed = remainingSec;
       button.textContent = remainingSec;
 
-      // Tic sur les 5 dernières secondes
       if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
         ticPlayed = true;
-        tic.currentTime = 0;
-        tic.play().catch(() => {});
+        playSound("tic", 1.0);
       }
     }
 
-    // Sonnerie sans overlap
     if (remainingMs <= 0 && !ringing) {
       ringing = true;
-      tic.pause();
-      tic.currentTime = 0;
       ticPlayed = false;
 
-      sonnerie.currentTime = 0;
-      sonnerie.play()
-        .catch(() => {})
-        .finally(() => {
-          // Déverrouillage même si play échoue
-          setTimeout(() => {
-            ringing = false;
-            sonnerie.pause();
-            sonnerie.currentTime = 0;
-          }, 3000);
-        });
+      playSound("dring", 0.5);
 
-      nextRingTime = now + 10000; // reset cycle à 10s
+      nextRingTime = now + 10000; // nouveau cycle 10s
       lastSecondDisplayed = null;
+
+      setTimeout(() => {
+        ringing = false;
+      }, 3000);
     }
 
     rafId = requestAnimationFrame(loop);
   }
 
-  function handleButtonClick() {
-    if (state === "ready" || state === "paused" || state === "running") {
-      startTimer();
-    }
-  }
-
-  button.addEventListener("click", handleButtonClick);
+  /* ============================
+     🖱 EVENTS
+     ============================ */
+  button.addEventListener("click", async () => {
+    await unlockAudio();
+    startTimer();
+  });
 
   stopButton.addEventListener("click", () => {
-    // Arrêt du timer
     state = "ready";
     cancelAnimationFrame(rafId);
 
-    // Arrêt immédiat des sons
-    tic.pause();
-    tic.currentTime = 0;
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
-
-    // Réinitialisation des variables
     lastSecondDisplayed = null;
     ticPlayed = false;
     ringing = false;
 
     const initial = parseInt(input.value) || 20;
-    cycleDuration = initial;
-    button.textContent = cycleDuration;
+    button.textContent = initial;
   });
 
-  // Affichage initial
+  /* ============================
+     📺 INITIAL DISPLAY
+     ============================ */
   const initial = parseInt(input.value) || 20;
   button.textContent = initial;
 });
