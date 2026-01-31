@@ -1,61 +1,97 @@
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("timerButton");
   const input = document.getElementById("durationInput");
-    const stopButton = document.getElementById("stopButton");
+  const stopButton = document.getElementById("stopButton");
 
 
-  let timeLeft = parseInt(input.value);
-  let interval = null;
-  let state = "ready"; // ready, running, paused
+let timeLeft = parseInt(input.value);
+let interval = null;
+let state = "ready"; // ready, running, paused
 
-  const sonnerie = new Audio("dring.mp3");
-  sonnerie.load();
-  sonnerie.volume = 0.5; // volume diminué
+// Sonnerie longue à zéro
+const sonnerie = new Audio("dring.mp3");
+sonnerie.load();
+sonnerie.volume = 0.5; // volume diminué
 
-  const tic = new Audio("tic.mp3");
-  tic.load();
-  tic.volume = 1.0;      // volume max
+// Tic sonore à chaque reset
+const tic = new Audio("tic.mp3");
+tic.load();
+// tic.playbackRate = 6; // vitesse x6
+tic.volume = 1.0;      // volume max
 
-  // Affiche la durée initiale
-  button.textContent = timeLeft;
-  button.style.fontSize = "6rem"; // texte initial gros
+// Affiche la durée initiale
+button.textContent = timeLeft;
+button.style.fontSize = "6rem"; // texte initial gros
+    
+let rafId = null;
+let nextRingTime = 0;
+let cycleDuration = 0;
+let lastSecondDisplayed = null;
+let ringing = false; // 🔒 verrou anti-overlap
 
-  let startTime = 0;
-  let lastDisplayedSecond = null;
-  let cycleDuration = 0;
-  let ticPlayed = false;
+function startTimer() {
+  cancelAnimationFrame(rafId);
 
-interval = setInterval(() => {
-  const elapsed = Math.floor((performance.now() - startTime) / 1000);
-  const currentTime = cycleDuration - elapsed;
+  tic.currentTime = 0;
+  tic.play().catch(() => {});
 
-  // 🔢 Affichage
-  if (currentTime !== lastDisplayedSecond && currentTime >= 0) {
-    lastDisplayedSecond = currentTime;
-    button.textContent = currentTime;
+  sonnerie.pause();
+  sonnerie.currentTime = 0;
+  ringing = false;
 
-    // ▶️ Tic UNE SEULE FOIS au passage 6 → 5
-    if (currentTime === 5 && !ticPlayed) {
-      ticPlayed = true;
+  const initial = parseInt(input.value);
+  cycleDuration = isNaN(initial) || initial <= 0 ? 15 : initial;
+
+  state = "running";
+  button.style.fontSize = "6rem";
+
+  const now = performance.now();
+  nextRingTime = now + cycleDuration * 1000;
+  lastSecondDisplayed = null;
+
+  loop();
+}
+
+function loop() {
+  const now = performance.now();
+  const remainingMs = nextRingTime - now;
+  const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+
+  // Mise à jour affichage
+  if (remainingSec !== lastSecondDisplayed) {
+    lastSecondDisplayed = remainingSec;
+    button.textContent = remainingSec;
+
+    // Tic sur les 5 dernières secondes
+    if (remainingSec <= 5 && remainingSec > 0) {
       tic.currentTime = 0;
       tic.play().catch(() => {});
     }
   }
 
-  // 🔔 Fin de cycle (événement unique)
-  if (currentTime <= 0 && lastDisplayedSecond !== cycleDuration) {
-    sonnerie.currentTime = 0;
-    sonnerie.play().catch(() => {});
+  // 🔔 Sonnerie sans overlap
+  if (remainingMs <= 0 && !ringing) {
+    ringing = true;
+    tic.pause();
+    tic.currentTime = 0;
 
-    // 🔁 Nouveau cycle à 10 secondes
-    cycleDuration = 10;
-    startTime = performance.now();
-    lastDisplayedSecond = cycleDuration;
-    button.textContent = cycleDuration;
-    ticPlayed = false;
+    sonnerie.currentTime = 0;
+    sonnerie.play()
+      .catch(() => {})
+      .finally(() => {
+        // Sécurité : déverrouillage même si play() échoue
+        setTimeout(() => ringing = false, 3000);
+      });
+
+    // Prochaine sonnerie exactement +5s
+    nextRingTime += 5000;
+    lastSecondDisplayed = null;
   }
 
-}, 50);
+  rafId = requestAnimationFrame(loop);
+}
+
+
 
   function handleButtonClick() {
     if (state === "ready" || state === "paused" || state === "running") {
@@ -70,8 +106,8 @@ interval = setInterval(() => {
     state = "ready";
     sonnerie.pause();
     sonnerie.currentTime = 0;
-    button.textContent = "20";
-    input.value = 20;
+    button.textContent = "15";
+    input.value = 15;
   });
 
 });
