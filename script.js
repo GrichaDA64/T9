@@ -57,9 +57,10 @@ function startTimer() {
         tic.currentTime = 0;
         tic.play().catch(() => {});
       }
-
-      // FIN DU CYCLE
+    }
+    // FIN DU CYCLE
       if (currentTime <= 0) {
+        ticPlayed = false;
         sonnerie.currentTime = 0;
         sonnerie.play().catch(() => {});
 
@@ -68,7 +69,6 @@ function startTimer() {
         lastDisplayedSecond = cycleDuration;
         button.textContent = cycleDuration;
       }
-    }
   }, 50); // haute fréquence, calcul léger
 }
 
