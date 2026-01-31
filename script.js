@@ -91,7 +91,11 @@ function loop() {
       .catch(() => {})
       .finally(() => {
         // Sécurité : déverrouillage même si play() échoue
-        setTimeout(() => ringing = false, 3000);
+        setTimeout(() => {
+          ringing = false;
+          sonnerie.pause();
+          sonnerie.currentTime = 0;
+        }, 3000);
       });
 
     nextRingTime += 10000;
