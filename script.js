@@ -3,133 +3,121 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
 
+  let state = "ready";
   let interval = null;
-  let state = "ready"; // ready, running, paused
+  let remaining = 0;
 
-  const sonnerie = new Audio("dring.mp3");
-  sonnerie.load();
-  sonnerie.volume = 0.5;
+  /* =========================
+     🔊 AUDIO LOW LATENCY
+     ========================= */
+  let audioCtx;
+  let buffers = {};
+  let unlocked = false;
 
-  const tic = new Audio("tic.mp3");
-  tic.load();
-  tic.volume = 1.0;
+  async function unlockAudio() {
+    if (unlocked) return;
 
-  const start = new Audio("reset.mp3");
-  start.load();
-  start.volume = 1.0;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
 
-  button.style.fontSize = "6rem";
+    await Promise.all([
+      loadSound("start", "reset.mp3"),
+      loadSound("tic", "tic.mp3"),
+      loadSound("dring", "dring.mp3")
+    ]);
 
-  let rafId = null;
-  let nextRingTime = 0;
-  let cycleDuration = 0;
-  let lastSecondDisplayed = null;
-  let ringing = false;
+    unlocked = true;
+  }
+
+  async function loadSound(name, url) {
+    const res = await fetch(url);
+    const data = await res.arrayBuffer();
+    buffers[name] = await audioCtx.decodeAudioData(data);
+  }
+
+  function play(name, volume = 1) {
+    if (!buffers[name]) return;
+
+    const src = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+
+    src.buffer = buffers[name];
+    gain.gain.value = volume;
+
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    src.start();
+  }
+
+  /* =========================
+     ⏱ TIMER
+     ========================= */
   let ticPlayed = false;
+  let ringing = false;
 
   function startTimer() {
-    cancelAnimationFrame(rafId);
-
-    // Jouer le son de reset
-    start.currentTime = 0;
-    start.play().catch(() => {});
-
-    tic.pause();
-    tic.currentTime = 0;
-    ticPlayed = false;
-
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
-    ringing = false;
+    clearInterval(interval);
 
     const initial = parseInt(input.value);
-    cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
+    remaining = isNaN(initial) || initial <= 0 ? 20 : initial;
 
+    button.textContent = remaining;
     state = "running";
-    button.textContent = cycleDuration;
-    lastSecondDisplayed = null;
 
-    nextRingTime = performance.now() + cycleDuration * 1000;
+    ticPlayed = false;
+    ringing = false;
 
-    loop();
-  }
+    play("start", 1);
 
-  function loop() {
-    if (state !== "running") return; // stop si état changé
+    interval = setInterval(() => {
+      if (state !== "running") return;
 
-    const now = performance.now();
-    const remainingMs = nextRingTime - now;
-    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      remaining--;
+      button.textContent = remaining;
 
-    // Mise à jour affichage
-    if (remainingSec !== lastSecondDisplayed) {
-      lastSecondDisplayed = remainingSec;
-      button.textContent = remainingSec;
-
-      // Tic sur les 5 dernières secondes
-      if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
+      // 🔹 TIC : une seule fois à 5s
+      if (remaining === 5 && !ticPlayed) {
         ticPlayed = true;
-        tic.currentTime = 0;
-        tic.play().catch(() => {});
+        play("tic", 1);
       }
-    }
 
-    // Sonnerie sans overlap
-    if (remainingMs <= 0 && !ringing) {
-      ringing = true;
-      tic.pause();
-      tic.currentTime = 0;
-      ticPlayed = false;
+      // 🔹 FIN DE CYCLE
+      if (remaining === 0 && !ringing) {
+        ringing = true;
+        play("dring", 0.5);
 
-      sonnerie.currentTime = 0;
-      sonnerie.play()
-        .catch(() => {})
-        .finally(() => {
-          // Déverrouillage même si play échoue
-          setTimeout(() => {
-            ringing = false;
-            sonnerie.pause();
-            sonnerie.currentTime = 0;
-          }, 3000);
-        });
+        // reset cycle
+        remaining = 10;
+        ticPlayed = false;
 
-      nextRingTime = now + 10000; // reset cycle à 10s
-      lastSecondDisplayed = null;
-    }
-
-    rafId = requestAnimationFrame(loop);
+        // déverrouille la sonnerie pour le prochain cycle
+        setTimeout(() => {
+          ringing = false;
+        }, 1000);
+      }
+    }, 1000);
   }
 
-  function handleButtonClick() {
-    if (state === "ready" || state === "paused" || state === "running") {
-      startTimer();
-    }
-  }
-
-  button.addEventListener("click", handleButtonClick);
+  /* =========================
+     🖱 EVENTS
+     ========================= */
+  button.addEventListener("click", async () => {
+    await unlockAudio();
+    startTimer();
+  });
 
   stopButton.addEventListener("click", () => {
-    // Arrêt du timer
     state = "ready";
-    cancelAnimationFrame(rafId);
+    clearInterval(interval);
 
-    // Arrêt immédiat des sons
-    tic.pause();
-    tic.currentTime = 0;
-    sonnerie.pause();
-    sonnerie.currentTime = 0;
-
-    // Réinitialisation des variables
-    lastSecondDisplayed = null;
     ticPlayed = false;
     ringing = false;
 
     const initial = parseInt(input.value) || 20;
-    cycleDuration = initial;
-    button.textContent = cycleDuration;
+    button.textContent = initial;
   });
 
-  // Affichage initial
-  const initial = parseInt(input.value) || 20;
-  button.textContent = initial;
+  button.style.fontSize = "6rem";
+  button.textContent = parseInt(input.value) || 20;
 });
