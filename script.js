@@ -104,10 +104,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // 🔹 FIN DE CYCLE : transition réelle 1 → 0
         if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
+        }
+        
+        if (lastSecond <=0 && remainingSec <= 0) {
+          button.textContent = 0;
+        }
 
-          // nouveau cycle PROPRE de 10 secondes
-          cycleEndTime = now + 10000;
-          lastSecond = null;
+        if (lastSecond ===-1 && remainingSec === -2) {
+          // 🔹 nouveau cycle de 10 secondes
+          cycleDuration = 10;
+          cycleEndTime = now + cycleDuration * 1000;
+        
+          // 🔹 IMPORTANT : initialiser lastSecond correctement pour éviter déclenchement immédiat du tic
+          lastSecond = cycleDuration;
+        
           return;
         }
 
