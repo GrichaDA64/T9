@@ -101,22 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
           play("tic", 1);
         }
 
-        // 🔹 FIN DE CYCLE : transition réelle 1 → 0
         if (lastSecond === 1 && remainingSec === 0) {
+          button.textContent = 0;   // afficher 0 immédiatement
           play("dring", 0.5);
-        }
         
-        if (lastSecond <=0 && remainingSec <= 0) {
-          button.textContent = 0;
-        }
-
-        if (lastSecond ===-1 && remainingSec === -2) {
-          // 🔹 nouveau cycle de 10 secondes
-          cycleDuration = 10;
-          cycleEndTime = now + cycleDuration * 1000;
+          // 🔹 arrêter le timer pendant la pause
+          clearInterval(interval);
+          state = "paused"; // état temporaire pour ne rien faire pendant la pause
         
-          // 🔹 IMPORTANT : initialiser lastSecond correctement pour éviter déclenchement immédiat du tic
-          lastSecond = cycleDuration;
+          // 🔹 attendre 2 secondes avant de redémarrer le cycle de 10 secondes
+          setTimeout(() => {
+            cycleDuration = 10;
+            cycleEndTime = performance.now() + cycleDuration * 1000;
+            lastSecond = cycleDuration;
+            state = "running";
+        
+            // relancer le setInterval
+            interval = setInterval(timerTick, 100);
+          }, 2000);
         
           return;
         }
