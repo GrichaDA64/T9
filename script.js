@@ -106,8 +106,10 @@ document.addEventListener("DOMContentLoaded", () => {
           play("dring", 0.5);
 
           // nouveau cycle
-          cycleEndTime = parseInt(input.value) || 20;
-          lastSecond = cycleEndTime;
+          const nextDuration = parseInt(input.value);
+  cycleDuration = isNaN(nextDuration) || nextDuration <= 0 ? 20 : nextDuration;
+  cycleEndTime = performance.now() + cycleDuration * 1000;
+  lastSecond = cycleDuration + 1;
         }
 
         lastSecond = remainingSec;
@@ -131,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
-    lastSecond = null;
+    lastSecond = initial + 1;
 
     // 🔹 arrêter tous les sons
     stopAllSounds();
