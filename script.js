@@ -4,130 +4,132 @@ document.addEventListener("DOMContentLoaded", () => {
   const stopButton = document.getElementById("stopButton");
 
   let interval = null;
-  let state = "ready"; // "ready", "running", "paused"
+  let state = "ready"; // ready, running, paused
 
+  const sonnerie = new Audio("dring.mp3");
+  sonnerie.load();
+  sonnerie.volume = 0.5;
+
+  const tic = new Audio("tic.mp3");
+  tic.load();
+  tic.volume = 1.0;
+
+  const start = new Audio("reset.mp3");
+  start.load();
+  start.volume = 1.0;
+
+  button.style.fontSize = "6rem";
+
+  let rafId = null;
+  let nextRingTime = 0;
   let cycleDuration = 0;
-  let cycleEndTime = 0;
-  let lastSecond = null;
-
-  let audioCtx;
-  let buffers = {};
-  let unlocked = false;
-  let activeSources = [];
-
-  async function unlockAudio() {
-    if (unlocked) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    await audioCtx.resume();
-    await Promise.all([
-      loadSound("start", "reset.mp3"),
-      loadSound("tic", "tic.mp3"),
-      loadSound("dring", "dring.mp3")
-    ]);
-    unlocked = true;
-  }
-
-  async function loadSound(name, url) {
-    const res = await fetch(url);
-    const data = await res.arrayBuffer();
-    buffers[name] = await audioCtx.decodeAudioData(data);
-  }
-
-  function play(name, volume = 1) {
-    if (!buffers[name]) return;
-    const src = audioCtx.createBufferSource();
-    const gain = audioCtx.createGain();
-    src.buffer = buffers[name];
-    gain.gain.value = volume;
-    src.connect(gain);
-    gain.connect(audioCtx.destination);
-    src.start();
-    activeSources.push(src);
-    src.onended = () => {
-      const index = activeSources.indexOf(src);
-      if (index > -1) activeSources.splice(index, 1);
-    };
-  }
-
-  function stopAllSounds() {
-    activeSources.forEach(src => {
-      try { src.stop(); } catch (e) {}
-    });
-    activeSources = [];
-  }
+  let lastSecondDisplayed = null;
+  let ringing = false;
+  let ticPlayed = false;
 
   function startTimer() {
-    clearInterval(interval);
+    cancelAnimationFrame(rafId);
+
+    // Jouer le son de reset
+    start.currentTime = 0;
+    start.play().catch(() => {});
+
+    tic.pause();
+    tic.currentTime = 0;
+    ticPlayed = false;
+
+    sonnerie.pause();
+    sonnerie.currentTime = 0;
+    ringing = false;
 
     const initial = parseInt(input.value);
     cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
 
-    cycleEndTime = performance.now() + cycleDuration * 1000;
-    lastSecond = null;
     state = "running";
+    button.textContent = cycleDuration;
+    lastSecondDisplayed = null;
 
-    play("start", 1);
+    nextRingTime = performance.now() + cycleDuration * 1000;
 
-    interval = setInterval(timerTick, 100);
+    loop();
   }
 
-  function timerTick() {
-    if (state === "ready") return;
+  function loop() {
+    if (state !== "running") return; // stop si état changé
 
     const now = performance.now();
-    let remainingMs = cycleEndTime - now;
-    let remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+    const remainingMs = nextRingTime - now;
+    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
 
-    if (state === "paused") {
-      // Affiche 0 pendant la pause
-      button.textContent = 0;
-      return;
-    }
-
-    if (remainingSec !== lastSecond) {
+    // Mise à jour affichage
+    if (remainingSec !== lastSecondDisplayed) {
+      lastSecondDisplayed = remainingSec;
       button.textContent = remainingSec;
 
-      // Tic
-      if (lastSecond === 6 && remainingSec === 5) {
-        play("tic", 1);
+      // Tic sur les 5 dernières secondes
+      if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
+        ticPlayed = true;
+        tic.currentTime = 0;
+        tic.play().catch(() => {});
       }
+    }
 
-      // Fin de cycle
-      if (lastSecond === 1 && remainingSec === 0) {
-        play("dring", 0.5);
-        state = "paused"; // pause de 2s
-        lastSecond = 0;
+    // Sonnerie sans overlap
+    if (remainingMs <= 0 && !ringing) {
+      ringing = true;
+      tic.pause();
+      tic.currentTime = 0;
+      ticPlayed = false;
 
-        // Nouvelle date de fin pour le prochain cycle
-        setTimeout(() => {
-          cycleDuration = 10;
-          cycleEndTime = performance.now() + cycleDuration * 1000;
-          lastSecond = cycleDuration;
-          state = "running";
-        }, 1000);
+      sonnerie.currentTime = 0;
+      sonnerie.play()
+        .catch(() => {})
+        .finally(() => {
+          // Déverrouillage même si play échoue
+          setTimeout(() => {
+            ringing = false;
+            sonnerie.pause();
+            sonnerie.currentTime = 0;
+          }, 3000);
+        });
 
-        return;
-      }
+      nextRingTime = now + 10000; // reset cycle à 10s
+      lastSecondDisplayed = null;
+    }
 
-      lastSecond = remainingSec;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function handleButtonClick() {
+    if (state === "ready" || state === "paused" || state === "running") {
+      startTimer();
     }
   }
 
-  button.addEventListener("click", async () => {
-    stopAllSounds();
-    await unlockAudio();
-    startTimer();
-  });
+  button.addEventListener("click", handleButtonClick);
 
   stopButton.addEventListener("click", () => {
+    // Arrêt du timer
     state = "ready";
-    clearInterval(interval);
+    cancelAnimationFrame(rafId);
+
+    // Arrêt immédiat des sons
+    tic.pause();
+    tic.currentTime = 0;
+    sonnerie.pause();
+    sonnerie.currentTime = 0;
+
+    // Réinitialisation des variables
+    lastSecondDisplayed = null;
+    ticPlayed = false;
+    ringing = false;
+
     const initial = parseInt(input.value) || 20;
-    button.textContent = initial;
-    lastSecond = null;
-    stopAllSounds();
+    cycleDuration = initial;
+    button.textContent = cycleDuration;
   });
 
-  button.style.fontSize = "6rem";
-  button.textContent = parseInt(input.value) || 20;
+  // Affichage initial
+  const initial = parseInt(input.value) || 20;
+  button.textContent = initial;
 });
