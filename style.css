@@ -91,7 +91,7 @@ body {
   #timerButton {
     width: 90vw;        /* presque toute la largeur */
     height: 90vw;       /* carré */
-    font-size: calc(10vw + 2rem); /* texte qui s’adapte */
+    font-size: calc(20vw + 2rem); /* texte qui s’adapte */
     border-radius: 20%;
   }
 }
