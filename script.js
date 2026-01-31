@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================
-     ⏱ TIMER PRECIS
+     ⏱ TIMER PRÉCIS ET SAIN
      ========================= */
   function startTimer() {
     clearInterval(interval);
@@ -75,26 +75,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const remainingMs = cycleEndTime - now;
       const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
 
-      // affichage + transition seconde
       if (remainingSec !== lastSecond) {
         button.textContent = remainingSec;
 
-        // 🔹 TIC : passage 6 → 5
+        // 🔹 TIC : transition réelle 6 → 5
         if (lastSecond === 6 && remainingSec === 5) {
           play("tic", 1);
         }
 
-        // 🔹 SONNERIE : passage 1 → 0
+        // 🔹 FIN DE CYCLE : transition réelle 1 → 0
         if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
 
-          // nouveau cycle
+          // nouveau cycle PROPRE
           cycleEndTime = now + 10000;
+          lastSecond = null;
+          return; // 🔥 clé de la correction
         }
 
         lastSecond = remainingSec;
       }
-    }, 100); // 🔥 fréquence élevée
+    }, 100);
   }
 
   /* =========================
@@ -111,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
+    lastSecond = null;
   });
 
   button.style.fontSize = "6rem";
