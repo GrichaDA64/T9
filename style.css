@@ -1,23 +1,27 @@
+/* ===== Corps de la page ===== */
 body {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
+  justify-content: center; /* centre verticalement */
+  align-items: center;     /* centre horizontalement */
   height: 100vh;
-  background: linear-gradient(135deg, #6dd5fa, #2980b9);
-  font-family: Arial, sans-serif;
   margin: 0;
-  position: relative;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #6dd5fa, #2980b9);
   overflow: hidden;
+  position: relative;
 }
 
+/* ===== Conteneur bouton timer ===== */
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20%; /* bouton légèrement plus haut */
+  flex: 1; /* prend tout l’espace vertical pour centrer */
+  width: 100%;
 }
 
+/* ===== Bouton timer ===== */
 #timerButton {
   background-color: #fff;
   color: #2980b9;
@@ -25,7 +29,7 @@ body {
   border-radius: 50%;
   width: 200px;
   height: 200px;
-  font-size: 6rem; /* texte deux fois plus gros */
+  font-size: 6rem;
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -36,15 +40,17 @@ body {
   transform: scale(0.95);
 }
 
+/* ===== Barre du bas ===== */
 .bottom-bar {
+  position: absolute;
+  bottom: 5%;       /* collé en bas */
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: absolute;
-  bottom: 5%; /* un peu remonté */
-  width: 100%;
 }
 
+/* Label et input dans le bottom-bar */
 .bottom-bar label {
   color: white;
   font-size: 1.2rem;
@@ -57,18 +63,13 @@ body {
   text-align: center;
   border-radius: 0.5rem;
   border: none;
-  margin-bottom: 5px;
 }
 
-/* box invisible pour pousser le champ vers le haut */
-.spacer {
-  height: 50px; /* ajustable selon besoin */
-}
-
+/* Stop Button */
 #stopButton {
   position: absolute;
-  top: 5vh; /* 5% de la hauteur de l'écran */
-  right: 3vw; /* 3% depuis le bord droit */
+  top: 40px;  /* plus bas pour être visible */
+  right: 15px;
   background: rgba(255, 255, 255, 0.8);
   color: #2980b9;
   border: none;
@@ -85,12 +86,12 @@ body {
   transform: scale(1.1);
 }
 
-/* Mobile : largeur de l'écran */
+/* ===== Responsive mobile ===== */
 @media (max-width: 600px) {
   #timerButton {
-    width: 90vw;   /* 90% de la largeur de l'écran */
-    height: 90vw;  /* carré */
-    font-size: calc(4vw + 2rem); /* texte qui s'adapte à la largeur */
-    border-radius: 20%; /* optionnel, moins rond sur mobile */
+    width: 90vw;        /* presque toute la largeur */
+    height: 90vw;       /* carré */
+    font-size: calc(4vw + 2rem); /* texte qui s’adapte */
+    border-radius: 20%;
   }
 }
