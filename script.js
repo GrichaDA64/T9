@@ -3,9 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
 
-  let state = "ready";
   let interval = null;
-  let remaining = 0;
+  let state = "ready";
+
+  let cycleDuration = 0;
+  let cycleEndTime = 0;
+  let lastSecond = null;
 
   /* =========================
      🔊 AUDIO LOW LATENCY
@@ -51,52 +54,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================
-     ⏱ TIMER
+     ⏱ TIMER PRECIS
      ========================= */
-  let ticPlayed = false;
-  let ringing = false;
-
   function startTimer() {
     clearInterval(interval);
 
     const initial = parseInt(input.value);
-    remaining = isNaN(initial) || initial <= 0 ? 20 : initial;
+    cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
 
-    button.textContent = remaining;
+    cycleEndTime = performance.now() + cycleDuration * 1000;
+    lastSecond = null;
     state = "running";
-
-    ticPlayed = false;
-    ringing = false;
 
     play("start", 1);
 
     interval = setInterval(() => {
       if (state !== "running") return;
 
-      remaining--;
-      button.textContent = remaining;
+      const now = performance.now();
+      const remainingMs = cycleEndTime - now;
+      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
 
-      // 🔹 TIC : une seule fois à 5s
-      if (remaining === 5 && !ticPlayed) {
-        ticPlayed = true;
-        play("tic", 1);
+      // affichage + transition seconde
+      if (remainingSec !== lastSecond) {
+        button.textContent = remainingSec;
+
+        // 🔹 TIC : passage 6 → 5
+        if (lastSecond === 6 && remainingSec === 5) {
+          play("tic", 1);
+        }
+
+        // 🔹 SONNERIE : passage 1 → 0
+        if (lastSecond === 1 && remainingSec === 0) {
+          play("dring", 0.5);
+
+          // nouveau cycle
+          cycleEndTime = now + 10000;
+        }
+
+        lastSecond = remainingSec;
       }
-
-      // 🔹 FIN DE CYCLE
-      if (remaining === 0 && !ringing) {
-        ringing = true;
-        play("dring", 0.5);
-
-        // reset cycle
-        remaining = 10;
-        ticPlayed = false;
-
-        // déverrouille la sonnerie pour le prochain cycle
-        setTimeout(() => {
-          ringing = false;
-        }, 1000);
-      }
-    }, 1000);
+    }, 100); // 🔥 fréquence élevée
   }
 
   /* =========================
@@ -110,9 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
   stopButton.addEventListener("click", () => {
     state = "ready";
     clearInterval(interval);
-
-    ticPlayed = false;
-    ringing = false;
 
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
