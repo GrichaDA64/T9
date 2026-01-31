@@ -67,8 +67,8 @@ body {
 
 #stopButton {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 5vh; /* 5% de la hauteur de l'écran */
+  right: 3vw; /* 3% depuis le bord droit */
   background: rgba(255, 255, 255, 0.8);
   color: #2980b9;
   border: none;
@@ -90,7 +90,7 @@ body {
   #timerButton {
     width: 90vw;   /* 90% de la largeur de l'écran */
     height: 90vw;  /* carré */
-    font-size: 5rem; /* réduire un peu la taille du texte pour rentrer */
+    font-size: calc(4vw + 2rem); /* texte qui s'adapte à la largeur */
     border-radius: 20%; /* optionnel, moins rond sur mobile */
   }
 }
