@@ -13,11 +13,17 @@ const sonnerie = new Audio("dring.mp3");
 sonnerie.load();
 sonnerie.volume = 0.5; // volume diminué
 
-// Tic sonore à chaque reset
+// Tic de fin
 const tic = new Audio("tic.mp3");
 tic.load();
 // tic.playbackRate = 6; // vitesse x6
 tic.volume = 1.0;      // volume max
+
+// Tic sonore à chaque reset
+const reset = new Audio("reset.mp3");
+reset.load();
+// tic.playbackRate = 6; // vitesse x6
+reset.volume = 1.0;      // volume max
 
 // Affiche la durée initiale
 button.textContent = timeLeft;
@@ -32,15 +38,15 @@ let ringing = false; // 🔒 verrou anti-overlap
 function startTimer() {
   cancelAnimationFrame(rafId);
 
-  tic.currentTime = 0;
-  tic.play().catch(() => {});
+  reset.currentTime = 0;
+  reset.play().catch(() => {});
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
   ringing = false;
 
   const initial = parseInt(input.value);
-  cycleDuration = isNaN(initial) || initial <= 0 ? 15 : initial;
+  cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
 
   state = "running";
   button.style.fontSize = "6rem";
@@ -106,8 +112,8 @@ function loop() {
     state = "ready";
     sonnerie.pause();
     sonnerie.currentTime = 0;
-    button.textContent = "15";
-    input.value = 15;
+    button.textContent = timeLeft;
+    input.value = timeLeft;
   });
 
 });
