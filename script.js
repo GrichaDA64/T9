@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cycleEndTime = performance.now() + cycleDuration * 1000;
           lastSecond = cycleDuration;
           state = "running";
-        }, 2000);
+        }, 1000);
 
         return;
       }
