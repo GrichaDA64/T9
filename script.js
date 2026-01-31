@@ -32,6 +32,7 @@ let nextRingTime = 0;
 let cycleDuration = 0;
 let lastSecondDisplayed = null;
 let ringing = false;
+let ticPlayed = false;
 
 function startTimer() {
   cancelAnimationFrame(rafId);
@@ -41,6 +42,7 @@ function startTimer() {
   
   tic.pause();
   tic.currentTime = 0;
+  ticPlayed = false;
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
@@ -70,7 +72,8 @@ function loop() {
     button.textContent = remainingSec;
 
     // Tic sur les 5 dernières secondes
-    if (remainingSec <= 5 && remainingSec > 0) {
+    if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
+      ticPlayed = true;
       tic.currentTime = 0;
       tic.play().catch(() => {});
     }
@@ -81,6 +84,7 @@ function loop() {
     ringing = true;
     tic.pause();
     tic.currentTime = 0;
+    ticPlayed = false;
 
     sonnerie.currentTime = 0;
     sonnerie.play()
@@ -90,7 +94,6 @@ function loop() {
         setTimeout(() => ringing = false, 3000);
       });
 
-    // Prochaine sonnerie exactement +5s
     nextRingTime += 10000;
     lastSecondDisplayed = null;
   }
