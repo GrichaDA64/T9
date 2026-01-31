@@ -85,3 +85,12 @@ body {
   transform: scale(1.1);
 }
 
+/* Mobile : largeur de l'écran */
+@media (max-width: 600px) {
+  #timerButton {
+    width: 90vw;   /* 90% de la largeur de l'écran */
+    height: 90vw;  /* carré */
+    font-size: 5rem; /* réduire un peu la taille du texte pour rentrer */
+    border-radius: 20%; /* optionnel, moins rond sur mobile */
+  }
+}
