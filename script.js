@@ -16,14 +16,12 @@ sonnerie.volume = 0.5; // volume diminué
 // Tic de fin
 const tic = new Audio("tic.mp3");
 tic.load();
-// tic.playbackRate = 6; // vitesse x6
 tic.volume = 1.0;      // volume max
 
 // Tic sonore à chaque reset
-const reset = new Audio("reset.mp3");
-reset.load();
-// tic.playbackRate = 6; // vitesse x6
-reset.volume = 1.0;      // volume max
+const start = new Audio("reset.mp3");
+start.load();
+start.volume = 1.0;      // volume max
 
 // Affiche la durée initiale
 button.textContent = timeLeft;
@@ -38,8 +36,11 @@ let ringing = false; // 🔒 verrou anti-overlap
 function startTimer() {
   cancelAnimationFrame(rafId);
 
-  reset.currentTime = 0;
-  reset.play().catch(() => {});
+  start.currentTime = 0;
+  start.play().catch(() => {});
+  
+  tic.pause();
+  tic.currentTime = 0;
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
