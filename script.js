@@ -25,53 +25,37 @@ document.addEventListener("DOMContentLoaded", () => {
   let cycleDuration = 0;
   let ticPlayed = false;
 
-function startTimer() {
-  if (interval) clearInterval(interval);
+interval = setInterval(() => {
+  const elapsed = Math.floor((performance.now() - startTime) / 1000);
+  const currentTime = cycleDuration - elapsed;
 
-  tic.currentTime = 0;
+  // 🔢 Affichage
+  if (currentTime !== lastDisplayedSecond && currentTime >= 0) {
+    lastDisplayedSecond = currentTime;
+    button.textContent = currentTime;
 
-  sonnerie.pause();
-  sonnerie.currentTime = 0;
-
-  const duration = parseInt(input.value);
-  cycleDuration = isNaN(duration) || duration <= 0 ? 20 : duration;
-
-  state = "running";
-  button.style.fontSize = "6rem";
-
-  startTime = performance.now();
-  lastDisplayedSecond = cycleDuration;
-
-  button.textContent = cycleDuration;
-
-  interval = setInterval(() => {
-    const elapsed = Math.floor((performance.now() - startTime) / 1000);
-    const currentTime = cycleDuration - elapsed;
-
-    if (currentTime !== lastDisplayedSecond) {
-      lastDisplayedSecond = currentTime;
-      button.textContent = currentTime;
-
-      if (currentTime <= 5 && currentTime > 0 && !ticPlayed) {
-        ticPlayed = true;
-        tic.currentTime = 0;
-        tic.play().catch(() => {});
-      }
+    // ▶️ Tic UNE SEULE FOIS au passage 6 → 5
+    if (currentTime === 5 && !ticPlayed) {
+      ticPlayed = true;
+      tic.currentTime = 0;
+      tic.play().catch(() => {});
     }
-    // FIN DU CYCLE
-      if (currentTime <= 0) {
-        ticPlayed = false;
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(() => {});
+  }
 
-        cycleDuration = 10;
-        startTime = performance.now();
-        lastDisplayedSecond = cycleDuration;
-        button.textContent = cycleDuration;
-      }
-  }, 50); // haute fréquence, calcul léger
-}
+  // 🔔 Fin de cycle (événement unique)
+  if (currentTime <= 0 && lastDisplayedSecond !== cycleDuration) {
+    sonnerie.currentTime = 0;
+    sonnerie.play().catch(() => {});
 
+    // 🔁 Nouveau cycle à 10 secondes
+    cycleDuration = 10;
+    startTime = performance.now();
+    lastDisplayedSecond = cycleDuration;
+    button.textContent = cycleDuration;
+    ticPlayed = false;
+  }
+
+}, 50);
 
   function handleButtonClick() {
     if (state === "ready" || state === "paused" || state === "running") {
