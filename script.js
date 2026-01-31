@@ -88,8 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     interval = setInterval(() => {
       if (state !== "running") return;
-      
-      dringUnlocked = false;
 
       const now = performance.now();
       const remainingMs = cycleEndTime - now;
@@ -101,12 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // 🔹 TIC : transition réelle 6 → 5
         if (lastSecond === 6 && remainingSec === 5) {
           play("tic", 1);
-          dringUnlocked = true;
         }
 
         // 🔹 FIN DE CYCLE : transition réelle 1 → 0
-        if (lastSecond === 1 && remainingSec === 0 && dringUnlocked) {
-          dringUnlocked = false;
+        if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
 
           // nouveau cycle
