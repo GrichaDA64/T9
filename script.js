@@ -29,7 +29,6 @@ function startTimer() {
   if (interval) clearInterval(interval);
 
   tic.currentTime = 0;
-  tic.play().catch(() => {});
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
