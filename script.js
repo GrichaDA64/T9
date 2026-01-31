@@ -115,15 +115,21 @@ function loop() {
 
   button.addEventListener("click", handleButtonClick);
     stopButton.addEventListener("click", () => {
-    clearInterval(interval);
-    interval = null;
-    state = "ready";
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
     tic.pause();
     tic.currentTime = 0;
     sonnerie.pause();
     sonnerie.currentTime = 0;
-    button.textContent = timeLeft;
-    input.value = timeLeft;
-  });
-
+    state = "ready";
+    lastDisplayedSecond = null;
+    previousTime = null;
+    ticPlayed = false;
+    cycleDuration = parseInt(input.value) || 20;
+    button.textContent = cycleDuration;
+    startTime = 0;
+});
+  
 });
