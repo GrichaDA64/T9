@@ -105,9 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
 
-          // 🔹 arrêter tous les sons existants
-          stopAllSounds();
-
           // nouveau cycle PROPRE de 10 secondes
           cycleEndTime = now + 10000;
           lastSecond = null;
