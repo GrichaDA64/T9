@@ -63,10 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // 🔹 Fonction pour arrêter tous les sons en cours
   function stopAllSounds() {
     activeSources.forEach(src => {
-      try { src.stop(); } catch(e) {}
+      try { src.stop(); } catch (e) {}
     });
     activeSources = [];
   }
@@ -74,6 +73,48 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      ⏱ TIMER PRÉCIS ET SAIN
      ========================= */
+  function timerTick() {
+    if (state !== "running") return;
+
+    const now = performance.now();
+    const remainingMs = cycleEndTime - now;
+    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+
+    if (remainingSec !== lastSecond) {
+      button.textContent = remainingSec;
+
+      // 🔹 TIC : transition 6 → 5
+      if (lastSecond === 6 && remainingSec === 5) {
+        play("tic", 1);
+      }
+
+      // 🔹 FIN DE CYCLE
+      if (lastSecond === 1 && remainingSec === 0) {
+        button.textContent = 0;
+        play("dring", 0.5);
+
+        // 🔹 arrêter temporairement le timer
+        clearInterval(interval);
+        state = "paused";
+
+        // 🔹 attendre 2 secondes avant de relancer un cycle de 10 s
+        setTimeout(() => {
+          cycleDuration = 10;
+          cycleEndTime = performance.now() + cycleDuration * 1000;
+          lastSecond = cycleDuration;
+          state = "running";
+
+          // relancer l'interval
+          interval = setInterval(timerTick, 100);
+        }, 2000);
+
+        return;
+      }
+
+      lastSecond = remainingSec;
+    }
+  }
+
   function startTimer() {
     clearInterval(interval);
 
@@ -86,54 +127,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     play("start", 1);
 
-    interval = setInterval(() => {
-      if (state !== "running") return;
-
-      const now = performance.now();
-      const remainingMs = cycleEndTime - now;
-      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
-
-      if (remainingSec !== lastSecond) {
-        button.textContent = remainingSec;
-
-        // 🔹 TIC : transition réelle 6 → 5
-        if (lastSecond === 6 && remainingSec === 5) {
-          play("tic", 1);
-        }
-
-        if (lastSecond === 1 && remainingSec === 0) {
-          button.textContent = 0;   // afficher 0 immédiatement
-          play("dring", 0.5);
-        
-          // 🔹 arrêter le timer pendant la pause
-          clearInterval(interval);
-          state = "paused"; // état temporaire pour ne rien faire pendant la pause
-        
-          // 🔹 attendre 2 secondes avant de redémarrer le cycle de 10 secondes
-          setTimeout(() => {
-            cycleDuration = 10;
-            cycleEndTime = performance.now() + cycleDuration * 1000;
-            lastSecond = cycleDuration;
-            state = "running";
-        
-            // relancer le setInterval
-            interval = setInterval(timerTick, 100);
-          }, 2000);
-        
-          return;
-        }
-
-        lastSecond = remainingSec;
-      }
-    }, 100);
+    interval = setInterval(timerTick, 100);
   }
 
   /* =========================
      🖱 EVENTS
      ========================= */
   button.addEventListener("click", async () => {
-    // 🔹 arrêter tous les sons avant de démarrer un nouveau cycle
-    stopAllSounds();
+    stopAllSounds(); // arrêter les sons si l'utilisateur clique
     await unlockAudio();
     startTimer();
   });
@@ -146,8 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     button.textContent = initial;
     lastSecond = null;
 
-    // 🔹 arrêter tous les sons
-    stopAllSounds();
+    stopAllSounds(); // arrêter les sons si l'utilisateur clique
   });
 
   button.style.fontSize = "6rem";
