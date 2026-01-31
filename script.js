@@ -8,84 +8,71 @@ document.addEventListener("DOMContentLoaded", () => {
   let interval = null;
   let state = "ready"; // ready, running, paused
 
-  // Sonnerie longue à zéro
   const sonnerie = new Audio("dring.mp3");
   sonnerie.load();
   sonnerie.volume = 0.5; // volume diminué
 
-  // Tic sonore à chaque reset
   const tic = new Audio("tic.mp3");
   tic.load();
- // tic.playbackRate = 6; // vitesse x6
   tic.volume = 1.0;      // volume max
 
   // Affiche la durée initiale
   button.textContent = timeLeft;
   button.style.fontSize = "6rem"; // texte initial gros
 
-  let rafId = null;
-let nextRingTime = 0;
-let lastSecondDisplayed = null;
-let ringing = false;
-let ticPlayed = false;
+  let startTime = 0;
+  let lastDisplayedSecond = null;
+  let cycleDuration = 0;
+  let ticPlayed = false;
 
 function startTimer() {
-  cancelAnimationFrame(rafId);
+  if (interval) clearInterval(interval);
 
-  tic.pause();
   tic.currentTime = 0;
-  ticPlayed = false;
+  tic.play().catch(() => {});
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
-  ringing = false;
 
-  const initial = parseInt(input.value);
-  const duration = isNaN(initial) || initial <= 0 ? 20 : initial;
+  const duration = parseInt(input.value);
+  cycleDuration = isNaN(duration) || duration <= 0 ? 20 : duration;
 
   state = "running";
   button.style.fontSize = "6rem";
 
-  nextRingTime = performance.now() + duration * 1000;
-  lastSecondDisplayed = duration;
+  startTime = performance.now();
+  lastDisplayedSecond = cycleDuration;
 
-  loop();
-}
+  button.textContent = cycleDuration;
 
-function loop() {
-  const now = performance.now();
-  const remainingMs = nextRingTime - now;
-  const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+  interval = setInterval(() => {
+    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const currentTime = cycleDuration - elapsed;
 
-  if (remainingSec !== lastSecondDisplayed) {
-    lastSecondDisplayed = remainingSec;
-    button.textContent = remainingSec;
+    if (currentTime !== lastDisplayedSecond) {
+      lastDisplayedSecond = currentTime;
+      button.textContent = currentTime;
 
-    if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
-      ticPlayed = true;
-      tic.currentTime = 0;
-      tic.play().catch(() => {});
+      if (currentTime <= 5 && currentTime > 0 && !ticPlayed) {
+        ticPlayed = true;
+        tic.currentTime = 0;
+        tic.play().catch(() => {});
+      }
+
+      // FIN DU CYCLE
+      if (currentTime <= 0) {
+        sonnerie.currentTime = 0;
+        sonnerie.play().catch(() => {});
+
+        cycleDuration = 10;
+        startTime = performance.now();
+        lastDisplayedSecond = cycleDuration;
+        button.textContent = cycleDuration;
+      }
     }
-      
-  if (remainingMs <= 0 && !ringing) {
-    ringing = true;
-
-    tic.pause();
-    tic.currentTime = 0;
-
-    sonnerie.currentTime = 0;
-    sonnerie.play().catch(() => {});
-
-    nextRingTime += 5000;
-    lastSecondDisplayed = duration;
-    ticPlayed = false;
-
-    setTimeout(() => ringing = false, 2000);
-  }
-  }
-
-  rafId = requestAnimationFrame(loop);
+  }, 50); // haute fréquence, calcul léger
 }
+
 
   function handleButtonClick() {
     if (state === "ready" || state === "paused" || state === "running") {
