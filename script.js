@@ -23,60 +23,69 @@ document.addEventListener("DOMContentLoaded", () => {
   button.textContent = timeLeft;
   button.style.fontSize = "6rem"; // texte initial gros
 
-  let startTime = 0;
-  let lastDisplayedSecond = null;
-  let cycleDuration = 0;
+  let rafId = null;
+let nextRingTime = 0;
+let lastSecondDisplayed = null;
+let ringing = false;
+let ticPlayed = false;
 
 function startTimer() {
-  if (interval) clearInterval(interval);
+  cancelAnimationFrame(rafId);
 
+  tic.pause();
   tic.currentTime = 0;
-  tic.play().catch(() => {});
+  ticPlayed = false;
 
   sonnerie.pause();
   sonnerie.currentTime = 0;
+  ringing = false;
 
-  const duration = parseInt(input.value);
-  cycleDuration = isNaN(duration) || duration <= 0 ? 15 : duration;
+  const initial = parseInt(input.value);
+  const duration = isNaN(initial) || initial <= 0 ? 20 : initial;
 
   state = "running";
   button.style.fontSize = "6rem";
 
-  startTime = performance.now();
-  lastDisplayedSecond = cycleDuration;
+  nextRingTime = performance.now() + duration * 1000;
+  lastSecondDisplayed = null;
 
-  button.textContent = cycleDuration;
-
-  interval = setInterval(() => {
-    const elapsed = Math.floor((performance.now() - startTime) / 1000);
-    const currentTime = cycleDuration - elapsed;
-
-    if (currentTime !== lastDisplayedSecond) {
-      lastDisplayedSecond = currentTime;
-      button.textContent = currentTime;
-
-      // Tic les 5 dernières secondes
-      if (currentTime <= 5 && currentTime > 0) {
-        tic.currentTime = 0;
-        tic.play().catch(() => {});
-      }
-
-      // FIN DU CYCLE
-      if (currentTime === 0) {
-        // Sonnerie
-        sonnerie.currentTime = 0;
-        sonnerie.play().catch(() => {});
-
-        // 🔁 Redémarre immédiatement un cycle de 5 secondes
-        cycleDuration = 10;
-        startTime = performance.now();
-        lastDisplayedSecond = cycleDuration;
-        button.textContent = cycleDuration;
-      }
-    }
-  }, 50); // haute fréquence, calcul léger
+  loop();
 }
 
+function loop() {
+  const now = performance.now();
+  const remainingMs = nextRingTime - now;
+  const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+
+  if (remainingSec !== lastSecondDisplayed) {
+    lastSecondDisplayed = remainingSec;
+    button.textContent = remainingSec;
+
+    if (remainingSec <= 5 && remainingSec > 0 && !ticPlayed) {
+      ticPlayed = true;
+      tic.currentTime = 0;
+      tic.play().catch(() => {});
+    }
+  }
+
+  if (remainingMs <= 0 && !ringing) {
+    ringing = true;
+
+    tic.pause();
+    tic.currentTime = 0;
+
+    sonnerie.currentTime = 0;
+    sonnerie.play().catch(() => {});
+
+    nextRingTime += 5000;
+    lastSecondDisplayed = null;
+    ticPlayed = false;
+
+    setTimeout(() => ringing = false, 3000);
+  }
+
+  rafId = requestAnimationFrame(loop);
+}
 
   function handleButtonClick() {
     if (state === "ready" || state === "paused" || state === "running") {
@@ -91,8 +100,8 @@ function startTimer() {
     state = "ready";
     sonnerie.pause();
     sonnerie.currentTime = 0;
-    button.textContent = "15";
-    input.value = 15;
+    button.textContent = "20";
+    input.value = 20;
   });
 
 });
