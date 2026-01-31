@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let audioCtx;
   let buffers = {};
   let unlocked = false;
+  let activeSources = []; // liste des sources audio actives
 
   async function unlockAudio() {
     if (unlocked) return;
@@ -51,6 +52,23 @@ document.addEventListener("DOMContentLoaded", () => {
     gain.connect(audioCtx.destination);
 
     src.start();
+
+    // Ajouter la source à la liste active
+    activeSources.push(src);
+
+    // Retirer la source quand le son se termine
+    src.onended = () => {
+      const index = activeSources.indexOf(src);
+      if (index > -1) activeSources.splice(index, 1);
+    };
+  }
+
+  // 🔹 Fonction pour arrêter tous les sons en cours
+  function stopAllSounds() {
+    activeSources.forEach(src => {
+      try { src.stop(); } catch(e) {}
+    });
+    activeSources = [];
   }
 
   /* =========================
@@ -87,10 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastSecond === 1 && remainingSec === 0) {
           play("dring", 0.5);
 
-          // nouveau cycle PROPRE
+          // 🔹 arrêter tous les sons existants
+          stopAllSounds();
+
+          // nouveau cycle PROPRE de 10 secondes
           cycleEndTime = now + 10000;
           lastSecond = null;
-          return; // 🔥 clé de la correction
+          return;
         }
 
         lastSecond = remainingSec;
@@ -102,6 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
      🖱 EVENTS
      ========================= */
   button.addEventListener("click", async () => {
+    // 🔹 arrêter tous les sons avant de démarrer un nouveau cycle
+    stopAllSounds();
     await unlockAudio();
     startTimer();
   });
@@ -113,6 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const initial = parseInt(input.value) || 20;
     button.textContent = initial;
     lastSecond = null;
+
+    // 🔹 arrêter tous les sons
+    stopAllSounds();
   });
 
   button.style.fontSize = "6rem";
