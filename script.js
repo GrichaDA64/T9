@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("timerButton");
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
+  const panicButton = document.getElementById("panicButton");
+  panicButton.textContent = "Panic";
 
   let interval = null;
   let state = "ready";
@@ -78,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(interval);
 
     const initial = parseInt(input.value);
-    cycleDuration = isNaN(initial) || initial <= 0 ? 20 : initial;
+    cycleDuration = isNaN(initial) || initial <= 0 ? 30 : initial;
 
     cycleEndTime = performance.now() + cycleDuration * 1000;
     lastSecond = null;
@@ -107,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // nouveau cycle
           const nextDuration = parseInt(input.value);
-          cycleDuration = isNaN(nextDuration) || nextDuration <= 0 ? 20 : nextDuration;
+          cycleDuration = isNaN(nextDuration) || nextDuration <= 0 ? 30 : nextDuration;
           cycleEndTime = performance.now() + cycleDuration * 1000;
           lastSecond = cycleDuration + 1;
         }
@@ -131,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state = "ready";
     clearInterval(interval);
 
-    const initial = parseInt(input.value) || 20;
+    const initial = parseInt(input.value) || 30;
     button.textContent = initial;
     lastSecond = initial + 1;
 
@@ -139,6 +141,16 @@ document.addEventListener("DOMContentLoaded", () => {
     stopAllSounds();
   });
 
+  panicButton.addEventListener("click", async () => {
+    stopAllSounds();
+
+    input.value = 15;
+    button.textContent = 15;
+
+    await unlockAudio();
+    startTimer();
+  });
+
   button.style.fontSize = "6rem";
-  button.textContent = parseInt(input.value) || 20;
+  button.textContent = parseInt(input.value) || 30;
 });
