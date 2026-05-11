@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("durationInput");
   const stopButton = document.getElementById("stopButton");
   const panicButton = document.getElementById("panicButton");
-  panicButton.textContent = "Panic";
+  const chillButton = document.getElementById("chillButton");
 
   let interval = null;
   let state = "ready";
@@ -12,9 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let cycleEndTime = 0;
   let lastSecond = null;
 
-  /* =========================
-     🔊 AUDIO LOW LATENCY
-     ========================= */
   let audioCtx;
   let buffers = {};
   let unlocked = false;
@@ -149,6 +146,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await unlockAudio();
     startTimer();
+  });
+
+  chillButton.addEventListener("click", async () => {
+    stopAllSounds();
+
+    input.value = 30;
+    button.textContent = 30;
+
+    await unlockAudio();
   });
 
   button.style.fontSize = "6rem";
