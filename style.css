@@ -12,6 +12,49 @@ body {
   position: relative;
 }
 
+/* ===== Barre du haut ===== */
+.top-bar {
+  position: absolute;
+  top: 3vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* ===== Boutons Chill / Panic ===== */
+#chillButton,
+#panicButton {
+  border: none;
+  border-radius: 1rem;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+#chillButton {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2980b9;
+}
+
+#panicButton {
+  background: rgba(214, 40, 40, 0.95);
+  color: white;
+}
+
+#chillButton:hover,
+#panicButton:hover {
+  transform: scale(1.05);
+}
+
+#chillButton:active,
+#panicButton:active {
+  transform: scale(0.95);
+}
+
 /* ===== Conteneur principal ===== */
 .container {
   display: flex;
@@ -42,25 +85,25 @@ body {
   transform: scale(0.95);
 }
 
-/* ===== Bouton Panic ===== */
-#panicButton {
-  background: #d62828;
-  color: white;
+/* ===== Bouton Stop ===== */
+#stopButton {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2980b9;
   border: none;
   border-radius: 1rem;
-  padding: 1rem 2rem;
-  font-size: 2rem;
+  padding: 1rem 2.5rem;
+  font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   transition: transform 0.2s;
 }
 
-#panicButton:hover {
+#stopButton:hover {
   transform: scale(1.05);
 }
 
-#panicButton:active {
+#stopButton:active {
   transform: scale(0.95);
 }
 
@@ -90,27 +133,6 @@ body {
   border: none;
 }
 
-/* ===== Bouton Stop ===== */
-#stopButton {
-  position: absolute;
-  top: 5vh;
-  right: 5vw;
-  background: rgba(255, 255, 255, 0.8);
-  color: #2980b9;
-  border: none;
-  border-radius: 50%;
-  width: min(20vw, 100px);
-  height: min(20vw, 100px);
-  font-size: 2rem;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
-}
-
-#stopButton:hover {
-  transform: scale(1.1);
-}
-
 /* ===== Responsive mobile ===== */
 @media (max-width: 600px) {
   #timerButton {
@@ -120,9 +142,14 @@ body {
     border-radius: 20%;
   }
 
+  #chillButton,
   #panicButton {
-    width: 70vw;
-    font-size: 1.5rem;
-    padding: 1rem;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  #stopButton {
+    width: 60vw;
+    font-size: 1.2rem;
   }
 }
