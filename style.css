@@ -139,7 +139,8 @@ body {
   #timerButton {
     width: 90vw;
     height: 90vw;
-    font-size: calc(20vw + 2rem);
+    font-size: 35vw;
+    line-height: 1;
     border-radius: 20%;
   }
 
