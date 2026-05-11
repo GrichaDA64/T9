@@ -149,12 +149,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   chillButton.addEventListener("click", async () => {
-    stopAllSounds();
+    state = "ready";
+    clearInterval(interval);
 
+    const initial = 30;
     input.value = 30;
-    button.textContent = 30;
+    button.textContent = initial;
+    lastSecond = initial + 1;
 
-    await unlockAudio();
+    // 🔹 arrêter tous les sons
+    stopAllSounds();
   });
 
   button.style.fontSize = "6rem";
