@@ -15,7 +15,7 @@ body {
 /* ===== Barre du haut ===== */
 .top-bar {
   position: absolute;
-  top: 3vh;
+  top: 5vh;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -145,6 +145,7 @@ body {
   #chillButton,
   #panicButton {
     font-size: 1.1rem;
+    width: 40vw;
     padding: 0.8rem 1.2rem;
   }
 
