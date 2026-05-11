@@ -22,6 +22,12 @@ body {
   gap: 1rem;
 }
 
+.top-bar-inner {
+  display: flex;
+  width: 200px;
+  height: 100%;
+}
+
 /* ===== Boutons Chill / Panic ===== */
 #chillButton,
 #panicButton {
